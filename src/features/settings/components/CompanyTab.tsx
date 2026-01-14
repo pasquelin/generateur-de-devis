@@ -1,8 +1,19 @@
 import { useFormContext } from 'react-hook-form'
 
 import type { SettingsFormData } from '../settings.schema'
-import { LEGAL_FORMS } from '../settings.types'
 import { LogoUploader } from './LogoUploader'
+
+const LEGAL_FORMS = [
+  { value: 'sarl', label: 'SARL' },
+  { value: 'sas', label: 'SAS' },
+  { value: 'sasu', label: 'SASU' },
+  { value: 'eurl', label: 'EURL' },
+  { value: 'ei', label: 'Entreprise Individuelle' },
+  { value: 'micro', label: 'Micro-entreprise' },
+  { value: 'sa', label: 'SA' },
+  { value: 'sci', label: 'SCI' },
+  { value: 'autre', label: 'Autre' },
+]
 
 export const CompanyTab = () => {
   const {
@@ -19,19 +30,15 @@ export const CompanyTab = () => {
       {/* Logo */}
       <LogoUploader
         value={logoValue}
-        onChange={(base64) => setValue('company.logo', base64)}
+        onChange={base64 => setValue('company.logo', base64)}
         error={errors.company?.logo?.message}
       />
 
       {/* Section Identité */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">
-          Identité
-        </h3>
-
         {/* Nom de l'entreprise */}
         <div className="flex flex-row gap-2">
-          <div className="form-control w-full grow">
+          <div className="form-control w-full grow space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">
                 Nom de l'entreprise <span className="text-error">*</span>
@@ -51,13 +58,13 @@ export const CompanyTab = () => {
           </div>
 
           {/* Forme juridique */}
-          <div className="form-control w-72">
+          <div className="form-control w-72 space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">Forme juridique</span>
             </label>
             <select {...register('company.legalForm')} className="select select-bordered w-full">
               <option value="">Sélectionner...</option>
-              {LEGAL_FORMS.map((form) => (
+              {LEGAL_FORMS.map(form => (
                 <option key={form.value} value={form.value}>
                   {form.label}
                 </option>
@@ -65,16 +72,9 @@ export const CompanyTab = () => {
             </select>
           </div>
         </div>
-      </div>
-
-      {/* Section Adresse */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">
-          Adresse
-        </h3>
 
         {/* Adresse */}
-        <div className="form-control w-full">
+        <div className="form-control mt-10 w-full space-y-1">
           <label className="label pt-0">
             <span className="label-text font-medium">
               Adresse <span className="text-error">*</span>
@@ -94,8 +94,8 @@ export const CompanyTab = () => {
         </div>
 
         {/* Code postal + Ville */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="form-control w-full">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="form-control w-full space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">
                 Code postal <span className="text-error">*</span>
@@ -117,7 +117,7 @@ export const CompanyTab = () => {
             )}
           </div>
 
-          <div className="form-control w-full">
+          <div className="form-control w-full space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">
                 Ville <span className="text-error">*</span>
@@ -136,17 +136,10 @@ export const CompanyTab = () => {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Section Contact */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">
-          Contact
-        </h3>
 
         {/* Téléphone + Email */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="form-control w-full">
+        <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="form-control w-full space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">Téléphone</span>
             </label>
@@ -163,7 +156,7 @@ export const CompanyTab = () => {
             )}
           </div>
 
-          <div className="form-control w-full">
+          <div className="form-control w-full space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">
                 Email <span className="text-error">*</span>
@@ -182,17 +175,10 @@ export const CompanyTab = () => {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Section Informations légales */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">
-          Informations légales
-        </h3>
 
         {/* SIRET + N° TVA */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="form-control w-full">
+        <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="form-control w-full space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">
                 SIRET <span className="text-error">*</span>
@@ -212,7 +198,7 @@ export const CompanyTab = () => {
             )}
           </div>
 
-          <div className="form-control w-full">
+          <div className="form-control w-full space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">N° TVA Intracommunautaire</span>
             </label>
@@ -234,8 +220,8 @@ export const CompanyTab = () => {
         </div>
 
         {/* RCS + Capital social */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="form-control w-full">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="form-control w-full space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">RCS</span>
             </label>
@@ -247,7 +233,7 @@ export const CompanyTab = () => {
             />
           </div>
 
-          <div className="form-control w-full">
+          <div className="form-control w-full space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">Capital social</span>
             </label>

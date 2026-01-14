@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @plugin "daisyui" {
-  themes: all;
+  themes: dark;
+}
+
+[data-theme="dark"] {
+  --color-primary: #014e70;
+  --color-primary-content: #ffffff;
 }
 
 input,

@@ -69,32 +69,28 @@ export const LogoUploader = ({ value, onChange, error }: LogoUploaderProps) => {
 
   return (
     <div className="form-control w-full">
-      <label className="label pt-0">
-        <span className="label-text font-medium">Logo de l'entreprise</span>
-      </label>
-
-      <div className="flex flex-col md:flex-row items-start gap-6">
+      <div className="flex flex-col items-center gap-6 md:flex-row">
         {/* Preview or placeholder */}
         <div
-          className={`relative flex items-center justify-center w-40 h-40 border-2 border-dashed rounded-box ${
+          className={`rounded-box relative flex h-36 w-36 items-center justify-center border-2 border-dashed ${
             displayError ? 'border-error' : 'border-base-300'
-          } bg-base-200 overflow-hidden shrink-0`}
+          } bg-base-200 shrink-0 overflow-hidden`}
         >
           {value ? (
             <>
-              <img src={value} alt="Logo" className="w-full h-full object-contain p-1" />
+              <img src={value} alt="Logo" className="h-full w-full object-contain p-1" />
               <button
                 type="button"
                 onClick={handleRemove}
-                className="absolute top-3 right-3 btn btn-circle btn-xs btn-error shadow-lg"
+                className="btn btn-circle btn-xs btn-error absolute top-3 right-3 shadow-lg"
                 disabled={isProcessing}
                 title="Supprimer le logo"
               >
-                <X className="w-3 h-3" />
+                <X className="h-3 w-3" />
               </button>
             </>
           ) : (
-            <ImageIcon className="w-16 h-16 text-base-content/20" />
+            <ImageIcon className="text-base-content/20 h-16 w-16" />
           )}
         </div>
 
@@ -113,7 +109,7 @@ export const LogoUploader = ({ value, onChange, error }: LogoUploaderProps) => {
               </>
             ) : (
               <>
-                <Upload className="w-4 h-4" />
+                <Upload className="h-4 w-4" />
                 {value ? 'Changer le logo' : 'Télécharger un logo'}
               </>
             )}
@@ -127,14 +123,14 @@ export const LogoUploader = ({ value, onChange, error }: LogoUploaderProps) => {
             className="hidden"
           />
 
-          <div className="text-xs text-base-content/60 space-y-1">
+          <div className="text-base-content/60 space-y-1 text-xs">
             <p>• Format accepté : JPG, PNG, WebP</p>
             <p>• Taille maximale : 5 MB</p>
             <p>• Dimensions recommandées : 400x400 px</p>
           </div>
 
           {displayError && (
-            <div className="alert alert-error py-2 px-3 text-xs">
+            <div className="alert alert-error px-3 py-2 text-xs">
               <span>{displayError}</span>
             </div>
           )}

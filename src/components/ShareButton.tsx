@@ -2,14 +2,14 @@
 import React, { useState } from 'react'
 import { Share2 } from 'lucide-react'
 import {
-  FacebookShareButton,
-  TwitterShareButton,
-  LinkedinShareButton,
-  WhatsappShareButton,
   FacebookIcon,
-  TwitterIcon,
+  FacebookShareButton,
   LinkedinIcon,
+  LinkedinShareButton,
+  TwitterIcon,
+  TwitterShareButton,
   WhatsappIcon,
+  WhatsappShareButton,
 } from 'react-share'
 import { cn } from '../utils/cn.ts'
 

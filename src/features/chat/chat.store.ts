@@ -8,10 +8,10 @@ interface ChatStore {
   clearChat: () => void
 }
 
-export const useChatStore = create<ChatStore>((set) => ({
+export const useChatStore = create<ChatStore>(set => ({
   messages: [],
   addMessage: (content, role) =>
-    set((state) => ({
+    set(state => ({
       messages: [
         ...state.messages,
         {

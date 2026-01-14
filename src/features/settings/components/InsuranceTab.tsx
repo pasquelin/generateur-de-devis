@@ -11,7 +11,7 @@ export const InsuranceTab = () => {
     <div className="space-y-6">
       {/* Information assurance décennale */}
       <div className="alert alert-soft alert-info">
-        <Info className="w-5 h-5 shrink-0" />
+        <Info className="h-5 w-5 shrink-0" />
         <div>
           <p className="font-semibold">Assurance décennale</p>
           <p className="text-sm">

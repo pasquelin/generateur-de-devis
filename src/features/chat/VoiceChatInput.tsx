@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { Mic, VolumeX, Repeat, MousePointerClick } from 'lucide-react'
+import { Mic, MousePointerClick, Repeat, VolumeX } from 'lucide-react'
 
 import { startAdvancedSpeechRecognition } from '../../services/speech-advanced.service'
 import { ttsService } from '../../services/textToSpeech.service'
@@ -26,24 +26,32 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
     toggleAutoMode,
     reset,
   } = useVoiceChatStore()
+  const { openModal } = useSettingsStore()
 
-  const { settings } = useSettingsStore()
+  const { settings, hasValidApiConfig } = useSettingsStore()
+  const isDisabled = !hasValidApiConfig()
 
   /**
    * Démarre l'écoute de l'utilisateur
    */
   const startListening = () => {
+    // Empêcher le démarrage si disabled
+    if (isDisabled) {
+      console.warn('⚠️ Configuration API invalide')
+      return
+    }
+
     setState('listening')
     setTranscript(null)
     setError(null)
 
     const stopRecognition = startAdvancedSpeechRecognition({
       // Transcription intermédiaire (en cours)
-      onInterim: (interimText) => {
+      onInterim: interimText => {
         setTranscript(interimText)
       },
       // Transcription finale
-      onFinal: (finalText) => {
+      onFinal: finalText => {
         setTranscript(finalText)
         addToHistory('user', finalText)
 
@@ -51,7 +59,7 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
         void processUserInput(finalText)
       },
       // Erreur
-      onError: (err) => {
+      onError: err => {
         console.error('❌ Erreur reconnaissance vocale:', err)
         setError(err.message)
         setState('error')
@@ -131,7 +139,7 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
         console.log('🔊 Lecture terminée')
 
         // En mode auto, relancer l'écoute
-        if (autoMode) {
+        if (autoMode && !isDisabled) {
           setTimeout(() => {
             startListening()
           }, 500)
@@ -193,51 +201,64 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
     }
   }, [stopConversation])
 
+  /**
+   * Arrêter la conversation si la config devient invalide
+   */
+  useEffect(() => {
+    if (isDisabled && state !== 'idle') {
+      stopConversation()
+    }
+  }, [isDisabled, state, stopConversation])
+
   return (
-    <div className="flex items-center gap-4 bg-neutral/20 px-4 py-3 rounded-box">
+    <div className="bg-neutral/20 rounded-box flex items-center gap-4 px-4 py-3">
       {/* Bouton micro */}
-      <div className="relative flex items-center justify-center shrink-0">
-        {state === 'listening' && (
+      <div className="relative flex shrink-0 items-center justify-center">
+        {state === 'listening' && !isDisabled && (
           <>
-            <span className="absolute w-16 h-16 rounded-full bg-primary/20 animate-ping" />
-            <span className="absolute w-14 h-14 rounded-full border border-primary/40 animate-pulse" />
+            <span className="bg-primary/20 absolute h-16 w-16 animate-ping rounded-full" />
+            <span className="border-primary/40 absolute h-14 w-14 animate-pulse rounded-full border" />
           </>
         )}
 
-        {state === 'speaking' && (
-          <span className="absolute w-14 h-14 rounded-full border border-secondary/40 animate-pulse" />
+        {state === 'speaking' && !isDisabled && (
+          <span className="border-secondary/40 absolute h-14 w-14 animate-pulse rounded-full border" />
         )}
 
         <button
           onClick={state === 'idle' ? startListening : stopConversation}
-          disabled={!settings.api.openaiKey}
-          className={`
-        relative z-10 w-12 h-12 rounded-full flex items-center justify-center
-        transition-all duration-300
-        ${
-          state === 'idle'
-            ? 'bg-neutral hover:bg-muted/80 text-neutral-content cursor-pointer'
-            : state === 'listening'
-              ? 'bg-primary text-primary-content'
-              : state === 'speaking'
-                ? 'bg-secondary text-secondary-content'
-                : 'bg-error text-error-content'
-        }
-        hover:scale-105 active:scale-95
-      `}
+          disabled={isDisabled}
+          className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 ${
+            isDisabled
+              ? 'bg-neutral/50 text-neutral-content/50 cursor-not-allowed'
+              : state === 'idle'
+                ? 'bg-neutral hover:bg-muted/80 text-neutral-content cursor-pointer'
+                : state === 'listening'
+                  ? 'bg-primary text-primary-content'
+                  : state === 'speaking'
+                    ? 'bg-secondary text-secondary-content'
+                    : 'bg-error text-error-content'
+          } ${!isDisabled && 'hover:scale-105 active:scale-95'}`}
         >
           {state === 'speaking' ? <VolumeX size={20} /> : <Mic size={20} />}
         </button>
       </div>
 
       {/* Texte central */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* État / erreur */}
         {state === 'error' && error ? (
-          <span className="text-xs text-error truncate">{error}</span>
+          <span className="text-error truncate text-xs">{error}</span>
+        ) : isDisabled ? (
+          <div className="inline-flex items-center gap-2">
+            <div className="text-warning truncate text-xs">⚠️ Configuration API requise</div>
+            <button className="btn btn-xs btn-warning" onClick={openModal}>
+              Modifier
+            </button>
+          </div>
         ) : (
           <>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               {state === 'idle' && 'Appuyez pour parler'}
               {state === 'listening' && 'Je vous écoute…'}
               {state === 'processing' && 'Analyse en cours…'}
@@ -245,7 +266,7 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
             </span>
 
             {state === 'listening' && currentTranscript && (
-              <span className="text-xs italic text-primary/70 truncate">“{currentTranscript}”</span>
+              <span className="text-primary/70 truncate text-xs italic">"{currentTranscript}"</span>
             )}
           </>
         )}
@@ -254,10 +275,15 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
       {/* Mode */}
       <button
         onClick={toggleAutoMode}
-        className={`btn  btn-sm
-    ${autoMode ? 'btn-primary' : 'btn-secondary'}
-  `}
-        title={autoMode ? 'Mode continu activé' : 'Mode manuel'}
+        disabled={isDisabled}
+        className={`btn btn-sm ${autoMode ? 'btn-primary' : 'btn-secondary'} ${isDisabled && 'btn-disabled'}`}
+        title={
+          isDisabled
+            ? 'Configuration API requise'
+            : autoMode
+              ? 'Mode continu activé'
+              : 'Mode manuel'
+        }
       >
         {autoMode ? (
           <>
@@ -271,9 +297,6 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
           </>
         )}
       </button>
-
-      {/* Warning clé API */}
-      {!settings.api.openaiKey && <span className="shrink-0 text-xs text-warning">⚠️ Clé API</span>}
     </div>
   )
 }

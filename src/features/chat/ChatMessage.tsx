@@ -16,7 +16,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
       <div className={cn('chat-bubble', isUser ? 'chat-bubble-primary' : 'chat-bubble-secondary')}>
         {message.content}
       </div>
-      <div className="chat-footer opacity-50 text-xs mt-1">
+      <div className="chat-footer mt-1 text-xs opacity-50">
         {new Date(message.timestamp).toLocaleTimeString('fr-FR', {
           hour: '2-digit',
           minute: '2-digit',

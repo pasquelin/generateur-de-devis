@@ -1,7 +1,13 @@
 import { useFormContext } from 'react-hook-form'
 
 import type { SettingsFormData } from '../settings.schema'
-import { VAT_RATES } from '../settings.types'
+
+const VAT_RATES = [
+  { value: '20', label: '20% (Taux normal)' },
+  { value: '10', label: '10% (Taux intermédiaire - Travaux rénovation)' },
+  { value: '5.5', label: '5,5% (Taux réduit - Travaux amélioration énergétique)' },
+  { value: '2.1', label: '2,1% (Taux super réduit)' },
+]
 
 export const TermsTab = () => {
   const {
@@ -17,15 +23,13 @@ export const TermsTab = () => {
     <div className="space-y-6">
       {/* Section TVA */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">TVA</h3>
-
         {/* TVA non applicable */}
         <div className="form-control">
           <label className="label cursor-pointer justify-start gap-3 py-3">
             <input type="checkbox" {...register('terms.vatNotApplicable')} className="checkbox" />
             <div>
               <span className="label-text font-medium">TVA non applicable (Micro-entreprise)</span>
-              <p className="text-xs text-base-content/60 mt-1">
+              <p className="text-base-content/60 mt-1 text-xs">
                 Article 293 B du CGI - Si vous êtes auto-entrepreneur ou micro-entrepreneur,
                 <br />
                 cochez cette case pour ne pas appliquer de TVA sur vos devis.
@@ -46,7 +50,7 @@ export const TermsTab = () => {
               {...register('terms.defaultVatRate')}
               className={`select select-bordered w-full ${errors.terms?.defaultVatRate ? 'select-error' : ''}`}
             >
-              {VAT_RATES.map((rate) => (
+              {VAT_RATES.map(rate => (
                 <option key={rate.value} value={rate.value}>
                   {rate.label}
                 </option>
@@ -63,9 +67,47 @@ export const TermsTab = () => {
         )}
       </div>
 
+      {/* Section Acompte */}
+      <div className="space-y-4">
+        {/* Acompte requis */}
+        <div className="form-control">
+          <label className="label cursor-pointer justify-start gap-3 py-3">
+            <input type="checkbox" {...register('terms.depositRequired')} className="checkbox" />
+            <span className="label-text font-medium">Acompte requis à la commande</span>
+          </label>
+        </div>
+
+        {/* Pourcentage d'acompte */}
+        {depositRequired && (
+          <div className="form-control w-full">
+            <label className="label pt-0">
+              <span className="label-text font-medium">Pourcentage d'acompte</span>
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                {...register('terms.depositPercentage', { valueAsNumber: true })}
+                className={`input input-bordered flex-1 ${errors.terms?.depositPercentage ? 'input-error' : ''}`}
+                placeholder="30"
+                min="0"
+                max="100"
+              />
+              <span className="text-lg font-medium">%</span>
+            </div>
+            {errors.terms?.depositPercentage && (
+              <label className="label">
+                <span className="label-text-alt text-error">
+                  {errors.terms.depositPercentage.message}
+                </span>
+              </label>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Section Validité et paiement */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">
+        <h3 className="text-base-content/70 text-sm font-semibold tracking-wide uppercase">
           Validité et paiement
         </h3>
 
@@ -140,51 +182,9 @@ export const TermsTab = () => {
         </div>
       </div>
 
-      {/* Section Acompte */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">
-          Acompte
-        </h3>
-
-        {/* Acompte requis */}
-        <div className="form-control">
-          <label className="label cursor-pointer justify-start gap-3 py-3">
-            <input type="checkbox" {...register('terms.depositRequired')} className="checkbox" />
-            <span className="label-text font-medium">Acompte requis à la commande</span>
-          </label>
-        </div>
-
-        {/* Pourcentage d'acompte */}
-        {depositRequired && (
-          <div className="form-control w-full">
-            <label className="label pt-0">
-              <span className="label-text font-medium">Pourcentage d'acompte</span>
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                {...register('terms.depositPercentage', { valueAsNumber: true })}
-                className={`input input-bordered flex-1 ${errors.terms?.depositPercentage ? 'input-error' : ''}`}
-                placeholder="30"
-                min="0"
-                max="100"
-              />
-              <span className="text-lg font-medium">%</span>
-            </div>
-            {errors.terms?.depositPercentage && (
-              <label className="label">
-                <span className="label-text-alt text-error">
-                  {errors.terms.depositPercentage.message}
-                </span>
-              </label>
-            )}
-          </div>
-        )}
-      </div>
-
       {/* Section Pénalités de retard */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">
+        <h3 className="text-base-content/70 text-sm font-semibold tracking-wide uppercase">
           Pénalités de retard
         </h3>
 
@@ -230,7 +230,7 @@ export const TermsTab = () => {
             </label>
           ) : (
             <label className="label">
-              <span className="label-text-alt text-base-content/60">
+              <span className="label-text-alt text-base-content/60 text-xs">
                 Minimum légal : 40 € (art. L441-6 et D441-5 du Code de commerce)
               </span>
             </label>
@@ -240,10 +240,6 @@ export const TermsTab = () => {
 
       {/* Section Texte personnalisé */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-base-content/70 uppercase tracking-wide">
-          Texte personnalisé
-        </h3>
-
         {/* Texte personnalisé */}
         <div className="form-control w-full">
           <label className="label pt-0">
@@ -251,11 +247,11 @@ export const TermsTab = () => {
           </label>
           <textarea
             {...register('terms.customFooterText')}
-            className="textarea textarea-bordered w-full h-32 resize-none"
+            className="textarea textarea-bordered h-32 w-full resize-none"
             placeholder="Texte libre qui apparaîtra en bas de vos devis..."
           />
           <label className="label">
-            <span className="label-text-alt text-base-content/60">
+            <span className="label-text-alt text-base-content/60 text-xs">
               Exemple : conditions particulières, informations sur votre activité, etc.
             </span>
           </label>

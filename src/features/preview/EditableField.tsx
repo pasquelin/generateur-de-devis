@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type CSSProperties, type ChangeEvent } from 'react'
+import { type ChangeEvent, type CSSProperties, useEffect, useRef, useState } from 'react'
 
 interface EditableFieldProps {
   value: string | number
@@ -120,10 +120,10 @@ export const EditableField = ({
         borderRadius: '2px',
         transition: 'background-color 0.2s',
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={e => {
         e.currentTarget.style.backgroundColor = '#f3f4f6'
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={e => {
         e.currentTarget.style.backgroundColor = 'transparent'
       }}
       title="Cliquer pour éditer"

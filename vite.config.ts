@@ -1,10 +1,22 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import checker from 'vite-plugin-checker'
+import tailwindcss from '@tailwindcss/vite'
+import path from 'node:path'
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    checker({
+      typescript: true,
+      overlay: true,
+    }),
+    tailwindcss(),
+  ],
+
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
 })
-
-
-// sudo certbot certonly --standalone -d gosecure.site -d operator.gosecure.site -d www.gosecure.site -d api.gosecure.site -d admin.gosecure.site -d generateur-de-devis.fr -d www.generateur-de-devis.fr

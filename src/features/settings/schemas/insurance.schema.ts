@@ -5,5 +5,3 @@ export const insuranceSchema = z.object({
   policyNumber: z.string().optional(),
   coverageZone: z.string().optional(),
 })
-
-export type InsuranceFormData = z.infer<typeof insuranceSchema>

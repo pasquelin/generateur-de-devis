@@ -89,6 +89,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
             fontFamily: 'Helvetica, Arial, sans-serif',
             fontSize: '10px',
             boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+            borderRadius: 6,
           }}
         >
           {/* Warning for missing fields */}
@@ -110,7 +111,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                 }}
               >
                 ⚠️ INFORMATIONS OBLIGATOIRES MANQUANTES :{' '}
-                {config.missingFields.map((f) => f.label).join(', ')}
+                {config.missingFields.map(f => f.label).join(', ')}
               </p>
             </div>
           )}
@@ -232,7 +233,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
               >
                 <EditableField
                   value={clientSection.data.name}
-                  onChange={(value) => updateClient('name', String(value))}
+                  onChange={value => updateClient('name', String(value))}
                   style={{ fontSize: '11px', fontWeight: 'bold', color: '#111827' }}
                   placeholder="Nom du client"
                 />
@@ -240,7 +241,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
               <div style={{ fontSize: '10px', marginBottom: '2px', color: '#374151' }}>
                 <EditableField
                   value={clientSection.data.address}
-                  onChange={(value) => updateClient('address', String(value))}
+                  onChange={value => updateClient('address', String(value))}
                   style={{ fontSize: '10px', color: '#374151' }}
                   placeholder="Adresse du client"
                 />
@@ -248,7 +249,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
               <div style={{ fontSize: '10px', marginBottom: '2px', color: '#374151' }}>
                 <EditableField
                   value={clientSection.data.email}
-                  onChange={(value) => updateClient('email', String(value))}
+                  onChange={value => updateClient('email', String(value))}
                   style={{ fontSize: '10px', color: '#374151' }}
                   placeholder="Email du client"
                 />
@@ -399,12 +400,12 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {linesSection.data.map((line) => (
+                    {linesSection.data.map(line => (
                       <tr key={line.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
                         <td style={{ padding: '8px', fontSize: '9px', color: '#111827' }}>
                           <EditableField
                             value={line.description}
-                            onChange={(value) => updateLine(line.id, 'description', value)}
+                            onChange={value => updateLine(line.id, 'description', value)}
                             style={{ fontSize: '9px', color: '#111827' }}
                             placeholder="Description"
                           />
@@ -419,7 +420,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                         >
                           <EditableField
                             value={line.quantity}
-                            onChange={(value) => updateLine(line.id, 'quantity', value)}
+                            onChange={value => updateLine(line.id, 'quantity', value)}
                             style={{ fontSize: '9px', color: '#111827', textAlign: 'center' }}
                             type="number"
                             placeholder="Qté"
@@ -435,7 +436,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                         >
                           <EditableField
                             value={line.unitPrice.toFixed(2)}
-                            onChange={(value) => updateLine(line.id, 'unitPrice', value)}
+                            onChange={value => updateLine(line.id, 'unitPrice', value)}
                             style={{ fontSize: '9px', color: '#111827', textAlign: 'right' }}
                             type="number"
                             placeholder="Prix"

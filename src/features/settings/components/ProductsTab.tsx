@@ -29,7 +29,7 @@ export const ProductsTab = () => {
     <div className="space-y-6">
       {/* Information importante */}
       <div className="alert alert-soft alert-info">
-        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+        <AlertCircle className="h-5 w-5 flex-shrink-0" />
         <div>
           <p className="font-semibold">Information</p>
           <p className="text-sm">
@@ -42,13 +42,13 @@ export const ProductsTab = () => {
       {/* Liste des produits */}
       <div className="space-y-4">
         {fields.length === 0 ? (
-          <div className="text-center py-8 text-base-content/60">
+          <div className="text-base-content/60 py-8 text-center">
             <p>Aucun produit configuré</p>
-            <p className="text-sm mt-1">Cliquez sur le bouton ci-dessous pour ajouter un produit</p>
+            <p className="mt-1 text-sm">Cliquez sur le bouton ci-dessous pour ajouter un produit</p>
           </div>
         ) : (
           fields.map((field, index) => (
-            <div key={field.id} className="card bg-base-200 border border-base-300 p-4 space-y-4">
+            <div key={field.id} className="card bg-base-200 border-base-300 space-y-4 border p-4">
               <div className="flex items-start justify-between">
                 <h4 className="font-medium">Produit {index + 1}</h4>
                 <button
@@ -57,11 +57,11 @@ export const ProductsTab = () => {
                   className="btn btn-square btn-sm btn-error"
                   title="Supprimer ce produit"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* Titre */}
                 <div className="form-control w-full space-y-1">
                   <label className="label pt-0">
@@ -130,7 +130,7 @@ export const ProductsTab = () => {
       {/* Bouton ajouter */}
       <div className="flex justify-center">
         <button type="button" onClick={handleAddProduct} className="btn btn-outline gap-2">
-          <Plus className="w-4 h-4" />
+          <Plus className="h-4 w-4" />
           Ajouter un produit
         </button>
       </div>

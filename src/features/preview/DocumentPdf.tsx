@@ -303,7 +303,7 @@ export const DocumentPdf = ({ data }: DocumentPdfProps) => {
           <View style={styles.warning}>
             <Text style={styles.warningText}>
               ⚠️ INFORMATIONS OBLIGATOIRES MANQUANTES :{' '}
-              {config.missingFields.map((f) => f.label).join(', ')}
+              {config.missingFields.map(f => f.label).join(', ')}
             </Text>
           </View>
         )}
@@ -394,7 +394,7 @@ export const DocumentPdf = ({ data }: DocumentPdfProps) => {
                 </View>
 
                 {/* Table Rows */}
-                {linesSection.data.map((line) => (
+                {linesSection.data.map(line => (
                   <View key={line.id} style={styles.tableRow}>
                     <Text style={styles.tableColDescription}>{line.description}</Text>
                     <Text style={styles.tableColQuantity}>{line.quantity}</Text>

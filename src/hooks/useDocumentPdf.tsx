@@ -9,15 +9,15 @@ export const useDocumentPdf = (data: DocumentData) => {
   const config = useDocumentConfig(data, settings, documentNumber)
 
   return {
-    headerSection: config.sections.find((s) => s.type === 'header'),
-    clientSection: config.sections.find((s) => s.type === 'client'),
-    linesSection: config.sections.find((s) => s.type === 'lines'),
-    totalsSection: config.sections.find((s) => s.type === 'totals'),
-    paymentSection: config.sections.find((s) => s.type === 'payment'),
-    bankingSection: config.sections.find((s) => s.type === 'banking'),
-    insuranceSection: config.sections.find((s) => s.type === 'insurance'),
-    customSection: config.sections.find((s) => s.type === 'custom'),
-    legalSection: config.sections.find((s) => s.type === 'legal'),
+    headerSection: config.sections.find(s => s.type === 'header'),
+    clientSection: config.sections.find(s => s.type === 'client'),
+    linesSection: config.sections.find(s => s.type === 'lines'),
+    totalsSection: config.sections.find(s => s.type === 'totals'),
+    paymentSection: config.sections.find(s => s.type === 'payment'),
+    bankingSection: config.sections.find(s => s.type === 'banking'),
+    insuranceSection: config.sections.find(s => s.type === 'insurance'),
+    customSection: config.sections.find(s => s.type === 'custom'),
+    legalSection: config.sections.find(s => s.type === 'legal'),
     config,
   }
 }

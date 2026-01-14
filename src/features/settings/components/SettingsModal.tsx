@@ -12,6 +12,7 @@ import { CompanyTab } from './CompanyTab'
 import { InsuranceTab } from './InsuranceTab'
 import { ProductsTab } from './ProductsTab'
 import { TermsTab } from './TermsTab'
+import type { ApiInfo } from '../settings.types.ts'
 
 interface TabConfig {
   id: number
@@ -43,11 +44,49 @@ export const SettingsModal = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = methods
+
+  // Watch pour validation réactive du tab API
+  const apiProvider = watch('api.provider')
+  const apiOpenaiKey = watch('api.openaiKey')
+  const apiClaudeKey = watch('api.claudeKey')
+  const apiGeminiKey = watch('api.geminiKey')
+  const apiMistralKey = watch('api.mistralKey')
+  const apiGroqKey = watch('api.groqKey')
 
   const onSubmit = async (data: SettingsFormData) => {
     try {
-      updateSettings(data)
+      // Nettoyage des clés : on ne garde que celle du provider actif
+      const cleanedApiData: Partial<ApiInfo> = {
+        provider: data.api.provider,
+      }
+
+      // Ne sauvegarder que la clé du provider sélectionné
+      const provider = data.api.provider || 'openai'
+      const keyField = `${provider}Key` as keyof ApiInfo
+
+      if (data.api[keyField]) {
+        cleanedApiData[keyField] = data.api[keyField]
+      }
+
+      // Garder les clés existantes des autres providers (ne pas les écraser)
+      const currentApiSettings = settings.api
+      const providers = ['openai', 'claude', 'gemini', 'mistral', 'groq']
+
+      providers.forEach(p => {
+        const key = `${p}Key` as keyof ApiInfo
+        if (p !== provider && currentApiSettings[key]) {
+          cleanedApiData[key] = currentApiSettings[key]
+        }
+      })
+
+      // Mettre à jour les settings avec les données nettoyées
+      updateSettings({
+        ...data,
+        api: cleanedApiData as ApiInfo,
+      })
+
       closeModal()
     } catch (error) {
       console.error('Error saving settings:', error)
@@ -59,11 +98,86 @@ export const SettingsModal = () => {
     closeModal()
   }
 
+  // Validation personnalisée pour le tab API (réactive, avec détection cross-provider)
+  const hasApiErrors = (): boolean => {
+    const provider = apiProvider || 'openai'
+
+    // Fonction pour détecter le type de clé
+    const detectKeyType = (key: string): string | null => {
+      if (key.startsWith('sk-ant-')) return 'Claude'
+      if (key.startsWith('sk-')) return 'OpenAI'
+      if (key.startsWith('AIza')) return 'Gemini'
+      if (key.startsWith('gsk_')) return 'Groq'
+      return null
+    }
+
+    let keyValue = ''
+    switch (provider) {
+      case 'openai':
+        keyValue = apiOpenaiKey || ''
+        break
+      case 'claude':
+        keyValue = apiClaudeKey || ''
+        break
+      case 'gemini':
+        keyValue = apiGeminiKey || ''
+        break
+      case 'groq':
+        keyValue = apiGroqKey || ''
+        break
+      case 'mistral':
+        keyValue = apiMistralKey || ''
+        break
+    }
+
+    if (!keyValue) return false
+
+    const detectedType = detectKeyType(keyValue)
+
+    // Vérification cross-provider pour tous
+    if (detectedType) {
+      const providerTypeMap: Record<string, string> = {
+        openai: 'OpenAI',
+        claude: 'Claude',
+        gemini: 'Gemini',
+        groq: 'Groq',
+      }
+
+      const expectedType = providerTypeMap[provider] ?? null
+
+      // Pour Mistral : si on détecte une clé d'un autre provider, c'est une erreur
+      if (provider === 'mistral') {
+        return true
+      }
+
+      // Pour les autres : si le type détecté ne correspond pas
+      if (expectedType && detectedType !== expectedType) {
+        return true // Mauvais type de clé
+      }
+    }
+
+    // Validation du format selon le provider
+    switch (provider) {
+      case 'openai':
+        return !keyValue.startsWith('sk-')
+      case 'claude':
+        return !keyValue.startsWith('sk-ant-')
+      case 'gemini':
+        return !keyValue.startsWith('AIza')
+      case 'groq':
+        return !keyValue.startsWith('gsk_')
+      case 'mistral':
+        return keyValue.length < 10
+      default:
+        return false
+    }
+  }
+
   // Check if a tab has errors
   const hasTabErrors = (tabId: number): boolean => {
     switch (tabId) {
       case 0:
-        return !!errors.api
+        return hasApiErrors() // Validation réactive pour API
       case 1:
         return !!errors.company
       case 2:
@@ -85,24 +199,24 @@ export const SettingsModal = () => {
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-4xl max-h-[90vh] flex flex-col p-0">
+      <div className="modal-box flex max-h-[90vh] max-w-4xl flex-col p-0">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-base-300">
+        <div className="border-base-300 flex items-center justify-between border-b p-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building className="w-5 h-5 text-primary" />
+            <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <Building className="text-primary h-5 w-5" />
             </div>
             <h3 className="text-xl font-bold">Paramètres Entreprise</h3>
           </div>
           <button onClick={handleClose} className="btn btn-ghost btn-sm btn-circle">
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-base-300 px-6">
+        <div className="border-base-300 border-b px-6">
           <div role="tablist" className="tabs tabs-bordered">
-            {TABS.map((tab) => {
+            {TABS.map(tab => {
               const Icon = tab.icon
               const hasError = hasTabErrors(tab.id)
               return (
@@ -113,7 +227,7 @@ export const SettingsModal = () => {
                   className={`tab gap-2 ${activeTab === tab.id ? 'tab-active' : ''}`}
                   onClick={() => setActiveTab(tab.id)}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="h-4 w-4" />
                   {tab.label}
                   {hasError && (
                     <div className="badge badge-error badge-xs" title="Erreurs de validation" />
@@ -126,13 +240,13 @@ export const SettingsModal = () => {
 
         {/* Content */}
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto p-6">
               <ActiveTabComponent />
             </div>
 
             {/* Footer Actions */}
-            <div className="border-t border-base-300 p-6 flex justify-end gap-3">
+            <div className="border-base-300 flex justify-end gap-3 border-t p-6">
               <button type="button" onClick={handleClose} className="btn btn-ghost">
                 Annuler
               </button>

@@ -1,261 +1,128 @@
-/**
- * Service IA pour l'intégration OpenAI
- */
+import type { AIMessage, AIResponse, AIServiceConfig } from './ai.types'
+import type { Product, ApiInfo } from '../features/settings/settings.types'
+import type { AIProvider } from './providers/provider.type.ts'
+import { ProviderRegistry } from './registry/provider.registry'
 import { SYSTEM_PROMPT } from '../prompts/system.prompt'
-import { AI_CONFIG } from './ai.config'
-import type { AIDocumentData, AIMessage, AIResponse, AIServiceConfig } from './ai.types'
-import type { Product } from '../features/settings/settings.types.ts'
+import { useSettingsStore } from '../features/settings/settings.store'
 
 /**
- * Classe principale pour gérer les interactions avec l'API OpenAI
+ * Service IA orchestrateur
+ * Gère la sélection du provider et délègue les opérations
  */
 class AIService {
-  private apiKey: string | null = null
+  private readonly registry: ProviderRegistry
+  private currentProvider: AIProvider | null = null
+  private currentProviderId: string = 'openai' // Provider par défaut
 
-  /**
-   * Configure le service avec une clé API
-   */
-  setApiKey(apiKey: string): void {
-    this.apiKey = apiKey
+  constructor() {
+    this.registry = new ProviderRegistry()
+    // Charge le provider par défaut
+    this.setProvider(this.currentProviderId)
   }
 
   /**
-   * Vérifie si le service est configuré
+   * Change le provider actif
+   * @param providerId - ID du provider ("openai", "claude", etc.)
+   * @returns true si le changement a réussi
    */
-  isConfigured(): boolean {
-    return this.apiKey !== null && this.apiKey.length > 0
+  setProvider(providerId: string): boolean {
+    const provider = this.registry.getProvider(providerId)
+    if (!provider) {
+      console.error(`Provider "${providerId}" non trouvé`)
+      return false
+    }
+    this.currentProvider = provider
+    this.currentProviderId = providerId
+    return true
+  }
+
+  /**
+   * Configure la clé API du provider actif
+   * @param apiKey - La clé API à configurer
+   */
+  setApiKey(apiKey: string): void {
+    if (!this.currentProvider) {
+      throw new Error('Aucun provider actif')
+    }
+    this.currentProvider.setApiKey(apiKey)
+  }
+
+  /**
+   * Configure provider + clé API en une seule opération
+   * @param providerId - ID du provider
+   * @param apiKey - Clé API
+   * @returns true si la configuration a réussi
+   */
+  configure(providerId: string, apiKey: string): boolean {
+    const success = this.setProvider(providerId)
+    if (success && apiKey) {
+      this.setApiKey(apiKey)
+    }
+    return success
+  }
+
+  /**
+   * Liste tous les providers disponibles (métadonnées uniquement)
+   * Utile pour l'UI de sélection
+   * @returns Tableau des métadonnées de tous les providers
+   */
+  getAvailableProviders() {
+    return this.registry.getProvidersMetadata()
   }
 
   /**
    * Génère un document à partir de l'historique de conversation
+   * Configure automatiquement le provider selon les settings
+   * Délègue l'appel au provider actif
    */
   async generateDocument(
     conversationHistory: AIMessage[],
     config?: Partial<AIServiceConfig>,
     products?: Product[],
   ): Promise<AIResponse> {
-    // Vérification de la clé API
-    if (!this.isConfigured()) {
+    // Récupérer les settings depuis le store
+    const { settings } = useSettingsStore.getState()
+    const { api } = settings
+
+    // Déterminer le provider actif
+    const providerId = api.provider || 'openai'
+
+    // Récupérer la clé API du provider actif
+    const apiKey = api[`${providerId}Key` as keyof ApiInfo]
+
+    // Vérifier que la clé existe
+    if (!apiKey || typeof apiKey !== 'string') {
+      const providerName = providerId.charAt(0).toUpperCase() + providerId.slice(1)
       return {
         success: false,
-        error: 'Clé API manquante. Veuillez la configurer dans les paramètres.',
+        error: `Clé API ${providerName} manquante. Veuillez la configurer dans les paramètres.`,
+      }
+    }
+
+    // Configurer le provider avec la clé (si nécessaire)
+    const configSuccess = this.configure(providerId, apiKey)
+    if (!configSuccess) {
+      return {
+        success: false,
+        error: `Provider "${providerId}" non disponible`,
+      }
+    }
+
+    // Vérifier que le provider est bien configuré
+    if (!this.currentProvider || !this.currentProvider.isConfigured()) {
+      return {
+        success: false,
+        error: 'Erreur de configuration du provider IA',
       }
     }
 
     try {
-      // Construction des messages avec le prompt système
-      const productsText = products?.length
-        ? '\n\nProduits disponibles:\n' +
-          products
-            .map(
-              (p) =>
-                `- ${p.title} (${p.price}€)${p.description ? ': ' + p.description : ''}`,
-            )
-            .join('\n')
-        : '\n\nAucun produit défini.'
-
-      const messages: AIMessage[] = [
-        {
-          role: 'system',
-          content: SYSTEM_PROMPT + productsText,
-        },
-        ...conversationHistory,
-      ]
-
-      console.log(messages)
-
-      // Appel à l'API OpenAI
-      return await this.callOpenAI(messages, config)
-    } catch (error) {
-      return this.handleError(error)
-    }
-  }
-
-  /**
-   * Appel direct à l'API OpenAI
-   */
-  private async callOpenAI(
-    messages: AIMessage[],
-    config?: Partial<AIServiceConfig>,
-  ): Promise<AIResponse> {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), AI_CONFIG.timeout)
-
-    try {
-      const response = await fetch(AI_CONFIG.apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: config?.model || AI_CONFIG.model,
-          messages: messages,
-          max_tokens: config?.maxTokens || AI_CONFIG.maxTokens,
-          temperature: config?.temperature ?? AI_CONFIG.temperature,
-          response_format: AI_CONFIG.responseFormat,
-        }),
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error?.message || `Erreur API: ${response.status}`)
-      }
-
-      const data = await response.json()
-      const content = data.choices?.[0]?.message?.content
-
-      if (!content) {
-        throw new Error("Réponse vide de l'API")
-      }
-
-      // Parse et validation du JSON
-      return this.parseAIResponse(content)
-    } catch (error) {
-      clearTimeout(timeoutId)
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        return {
-          success: false,
-          error: "Délai d'attente dépassé. Veuillez réessayer.",
-        }
-      }
-
-      throw error
-    }
-  }
-
-  /**
-   * Parse et valide la réponse JSON de l'IA
-   */
-  private parseAIResponse(content: string): AIResponse {
-    try {
-      // Nettoyage de la réponse (au cas où l'IA ajoute du markdown)
-      let cleanContent = content.trim()
-
-      // Suppression des balises markdown si présentes
-      if (cleanContent.startsWith('```json')) {
-        cleanContent = cleanContent.replace(/```json\n?/g, '').replace(/```\n?/g, '')
-      } else if (cleanContent.startsWith('```')) {
-        cleanContent = cleanContent.replace(/```\n?/g, '')
-      }
-
-      cleanContent = cleanContent.trim()
-
-      // Parse du JSON
-      const parsed = JSON.parse(cleanContent) as AIDocumentData
-
-      // Validation basique de la structure
-      if (!this.isValidDocumentData(parsed)) {
-        return {
-          success: false,
-          error: "Structure de données invalide reçue de l'IA",
-          rawResponse: content,
-        }
-      }
-
-      return {
-        success: true,
-        data: parsed,
-      }
-    } catch {
-      return {
-        success: false,
-        error: `Impossible de parser la réponse JSON de l'IA`,
-        rawResponse: content,
-      }
-    }
-  }
-
-  /**
-   * Valide la structure des données du document
-   */
-  private isValidDocumentData(data: unknown): data is AIDocumentData {
-    if (!data || typeof data !== 'object') return false
-
-    const doc = data as Partial<AIDocumentData>
-
-    // Vérification des champs obligatoires
-    if (typeof doc.title !== 'string') return false
-
-    if (!doc.client || typeof doc.client !== 'object') return false
-    if (typeof doc.client.name !== 'string') return false
-    if (typeof doc.client.address !== 'string') return false
-    if (typeof doc.client.email !== 'string') return false
-
-    if (!Array.isArray(doc.lines)) return false
-
-    // Vérification de chaque ligne
-    for (const line of doc.lines) {
-      if (typeof line.description !== 'string') return false
-      if (typeof line.quantity !== 'number') return false
-      if (typeof line.unitPrice !== 'number') return false
-    }
-
-    return true
-  }
-
-  /**
-   * Gestion centralisée des erreurs
-   */
-  private handleError(error: unknown): AIResponse {
-    console.error('Erreur AI Service:', error)
-
-    if (error instanceof Error) {
-      // Erreurs réseau
-      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        return {
-          success: false,
-          error: 'Erreur de connexion. Vérifiez votre connexion internet.',
-        }
-      }
-
-      // Erreur API
-      if (error.message.includes('API')) {
-        return {
-          success: false,
-          error: error.message,
-        }
-      }
-
-      return {
-        success: false,
-        error: `Erreur: ${error.message}`,
-      }
-    }
-
-    return {
-      success: false,
-      error: 'Une erreur inconnue est survenue',
-    }
-  }
-
-  /**
-   * Test de la connexion API
-   */
-  async testConnection(): Promise<{ success: boolean; error?: string }> {
-    if (!this.isConfigured()) {
-      return {
-        success: false,
-        error: 'Clé API manquante',
-      }
-    }
-
-    try {
-      const response = await this.callOpenAI([
-        {
-          role: 'user',
-          content: 'Test',
-        },
-      ])
-
-      return {
-        success: response.success,
-        error: response.error,
-      }
+      return await this.currentProvider.generateDocument(
+        conversationHistory,
+        SYSTEM_PROMPT,
+        products,
+        config,
+      )
     } catch (error) {
       return {
         success: false,
