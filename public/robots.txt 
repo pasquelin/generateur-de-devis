@@ -1,0 +1,53 @@
+# robots.txt pour Générateur de Devis IA
+
+# Autoriser tous les robots d'indexation
+User-agent: *
+Allow: /
+
+# Autoriser spécifiquement les principaux crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Autoriser les IA (ChatGPT, Claude, etc.)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# Bloquer les mauvais bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Sitemap
+Sitemap: https://votre-domaine.com/sitemap.xml
+
+# Crawl-delay pour éviter la surcharge serveur
+Crawl-delay: 1
