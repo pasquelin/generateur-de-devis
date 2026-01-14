@@ -6,6 +6,7 @@ import { startAdvancedSpeechRecognition } from '../../services/speech-advanced.s
 import { ttsService } from '../../services/textToSpeech.service'
 import { useVoiceChatStore } from '../../stores/voice-chat.store'
 import { useSettingsStore } from '../settings/settings.store'
+import { useApiModal } from '../settings/hooks/useApiModal.ts'
 
 interface VoiceChatInputProps {
   onSendMessage: (message: string) => Promise<string | undefined>
@@ -26,8 +27,8 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
     toggleAutoMode,
     reset,
   } = useVoiceChatStore()
-  const { openModal } = useSettingsStore()
 
+  const { openModal } = useApiModal()
   const { settings, hasValidApiConfig } = useSettingsStore()
   const isDisabled = !hasValidApiConfig()
 

@@ -7,6 +7,7 @@ import { SettingsModal } from '../features/settings/components/SettingsModal'
 import { useSettingsStore } from '../features/settings/settings.store'
 import { usePdfExport } from '../hooks/usePdfExport.tsx'
 import { ShareButton } from '../components/ShareButton.tsx'
+import { ApiModal } from '../features/settings/components/ApiModal.tsx'
 
 export const MainLayout = () => {
   const { openModal } = useSettingsStore()
@@ -66,6 +67,7 @@ export const MainLayout = () => {
         </footer>
       </div>
       <SettingsModal />
+      <ApiModal />
     </>
   )
 }

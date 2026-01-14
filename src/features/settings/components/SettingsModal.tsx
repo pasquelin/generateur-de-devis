@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,6 +13,7 @@ import { CompanyTab } from './CompanyTab'
 import { InsuranceTab } from './InsuranceTab'
 import { ProductsTab } from './ProductsTab'
 import { TermsTab } from './TermsTab'
+import { validateApiKey } from '../utils/apiValidation'
 import type { ApiInfo } from '../settings.types.ts'
 
 interface TabConfig {
@@ -34,6 +36,8 @@ export const SettingsModal = () => {
   const { isModalOpen, closeModal, settings, updateSettings, activeTab, setActiveTab } =
     useSettingsStore()
 
+  console.log('---',settings)
+
   const methods = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
     defaultValues: settings,
@@ -46,6 +50,11 @@ export const SettingsModal = () => {
     reset,
     watch,
   } = methods
+
+  // Resynchroniser le formulaire quand les settings du store changent
+  useEffect(() => {
+    reset(settings)
+  }, [settings, reset])
 
   // Watch pour validation réactive du tab API
   const apiProvider = watch('api.provider')
@@ -98,79 +107,17 @@ export const SettingsModal = () => {
     closeModal()
   }
 
-  // Validation personnalisée pour le tab API (réactive, avec détection cross-provider)
+  // Validation personnalisée pour le tab API (réactive)
   const hasApiErrors = (): boolean => {
     const provider = apiProvider || 'openai'
-
-    // Fonction pour détecter le type de clé
-    const detectKeyType = (key: string): string | null => {
-      if (key.startsWith('sk-ant-')) return 'Claude'
-      if (key.startsWith('sk-')) return 'OpenAI'
-      if (key.startsWith('AIza')) return 'Gemini'
-      if (key.startsWith('gsk_')) return 'Groq'
-      return null
-    }
-
-    let keyValue = ''
-    switch (provider) {
-      case 'openai':
-        keyValue = apiOpenaiKey || ''
-        break
-      case 'claude':
-        keyValue = apiClaudeKey || ''
-        break
-      case 'gemini':
-        keyValue = apiGeminiKey || ''
-        break
-      case 'groq':
-        keyValue = apiGroqKey || ''
-        break
-      case 'mistral':
-        keyValue = apiMistralKey || ''
-        break
-    }
-
-    if (!keyValue) return false
-
-    const detectedType = detectKeyType(keyValue)
-
-    // Vérification cross-provider pour tous
-    if (detectedType) {
-      const providerTypeMap: Record<string, string> = {
-        openai: 'OpenAI',
-        claude: 'Claude',
-        gemini: 'Gemini',
-        groq: 'Groq',
-      }
-
-      const expectedType = providerTypeMap[provider] ?? null
-
-      // Pour Mistral : si on détecte une clé d'un autre provider, c'est une erreur
-      if (provider === 'mistral') {
-        return true
-      }
-
-      // Pour les autres : si le type détecté ne correspond pas
-      if (expectedType && detectedType !== expectedType) {
-        return true // Mauvais type de clé
-      }
-    }
-
-    // Validation du format selon le provider
-    switch (provider) {
-      case 'openai':
-        return !keyValue.startsWith('sk-')
-      case 'claude':
-        return !keyValue.startsWith('sk-ant-')
-      case 'gemini':
-        return !keyValue.startsWith('AIza')
-      case 'groq':
-        return !keyValue.startsWith('gsk_')
-      case 'mistral':
-        return keyValue.length < 10
-      default:
-        return false
-    }
+    return validateApiKey(
+      provider,
+      apiOpenaiKey,
+      apiClaudeKey,
+      apiGeminiKey,
+      apiMistralKey,
+      apiGroqKey,
+    )
   }
 
   // Check if a tab has errors
@@ -192,6 +139,8 @@ export const SettingsModal = () => {
         return false
     }
   }
+
+  console.log(settings.api.provider)
 
   if (!isModalOpen) return null
 
