@@ -115,13 +115,6 @@ class AIService {
       }
     }
 
-    console.log(
-      SYSTEM_PROMPT.replace(
-        '{{businessExplanation}}',
-        settings.company.businessExplanation || 'aucune information sur le métier',
-      ).replace('{{products}}', this.formatProducts(settings.products.items)),
-    )
-
     try {
       return await this.currentProvider.generateDocument(
         conversationHistory,

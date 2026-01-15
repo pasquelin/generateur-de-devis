@@ -8,6 +8,7 @@ import type {
   CompanySettings,
   InsuranceInfo,
   ProductsInfo,
+  TemplateInfo,
   TermsInfo,
 } from './settings.types'
 
@@ -27,6 +28,7 @@ interface SettingsStore {
   updateTerms: (terms: Partial<TermsInfo>) => void
   updateApi: (api: Partial<ApiInfo>) => void
   updateProducts: (products: Partial<ProductsInfo>) => void
+  updateTemplate: (template: Partial<TemplateInfo>) => void
   resetSettings: () => void
 
   // Modal actions
@@ -63,6 +65,36 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   products: {
     items: [],
   },
+  template: {
+    activeTemplate: 'default',
+    templates: {
+      default: {
+        name: 'Classique',
+        description: 'Template standard',
+        styles: {
+          primaryColor: '#2563eb',
+          textColor: '#1f2937',
+          backgroundColor: '#f9fafb',
+          accentColor: '#f59e0b',
+          borderColor: '#e5e7eb',
+          font: 'Helvetica',
+          logoWidth: 80,
+          basePadding: 40,
+        },
+      },
+    },
+  },
+}
+
+const migrateSettings = (savedSettings: any): CompanySettings => {
+  // Ensure template structure exists for older data
+  if (!savedSettings.template) {
+    return {
+      ...savedSettings,
+      template: DEFAULT_SETTINGS.template,
+    }
+  }
+  return savedSettings
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -135,6 +167,14 @@ export const useSettingsStore = create<SettingsStore>()(
           },
         })),
 
+      updateTemplate: template =>
+        set(state => ({
+          settings: {
+            ...state.settings,
+            template: { ...state.settings.template, ...template },
+          },
+        })),
+
       resetSettings: () => set({ settings: DEFAULT_SETTINGS }),
 
       openModal: () => set({ isModalOpen: true }),
@@ -146,6 +186,11 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: 'company-settings-storage',
       partialize: state => ({ settings: state.settings }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.settings = migrateSettings(state.settings)
+        }
+      },
     },
   ),
 )

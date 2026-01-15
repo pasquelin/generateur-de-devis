@@ -4,6 +4,7 @@ import { ChatPanel } from '../features/chat/ChatPanel'
 import { PreviewPanel } from '../features/preview/PreviewPanel'
 import { useDocumentStore } from '../features/preview/document.store'
 import { SettingsModal } from '../features/settings/components/SettingsModal'
+import { TemplateEditor } from '../features/settings/components/TemplateEditor'
 import { useSettingsStore } from '../features/settings/settings.store'
 import { usePdfExport } from '../hooks/usePdfExport.tsx'
 import { ShareButton } from '../components/ShareButton.tsx'
@@ -49,11 +50,14 @@ export const MainLayout = () => {
         </div>
         <main className="grow p-4">
           <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-12">
-            <div className="relative lg:col-span-5">
+            <div className="relative min-h-120 lg:col-span-4">
               <ChatPanel />
             </div>
-            <div className="lg:col-span-7">
+            <div className="min-h-100 lg:col-span-6">
               <PreviewPanel />
+            </div>
+            <div className="lg:col-span-2">
+              <TemplateEditor />
             </div>
           </div>
         </main>

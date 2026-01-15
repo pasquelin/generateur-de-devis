@@ -21,7 +21,15 @@ export class GroqProvider implements AIProvider {
   }
 
   setApiKey(apiKey: string): void {
-    this.apiKey = apiKey
+    this.apiKey = this.sanitizeApiKey(apiKey)
+  }
+
+  private sanitizeApiKey(apiKey: string): string {
+    // Nettoie la clé API pour éviter les erreurs d'encodage dans les en-têtes HTTP
+    return apiKey
+      .trim() // Enlève les espaces en début/fin
+      .replace(/[\r\n\t]/g, '') // Enlève les retours à la ligne et tabulations
+      .replace(/[^\x00-\x7F]/g, '') // Enlève les caractères non-ASCII
   }
 
   isConfigured(): boolean {

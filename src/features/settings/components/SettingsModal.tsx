@@ -155,6 +155,8 @@ export const SettingsModal = () => {
         return !!errors.terms
       case 6:
         return !!errors.products
+      case 7:
+        return !!errors.template
       default:
         return false
     }

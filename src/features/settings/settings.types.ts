@@ -59,6 +59,28 @@ export interface ProductsInfo {
   items: Product[]
 }
 
+export interface TemplateStyle {
+  primaryColor: string
+  textColor: string
+  backgroundColor: string
+  accentColor: string
+  borderColor: string
+  font: string
+  logoWidth: number
+  basePadding: number
+}
+
+export interface TemplateConfig {
+  name: string
+  description?: string
+  styles: TemplateStyle
+}
+
+export interface TemplateInfo {
+  activeTemplate: string
+  templates: Record<string, TemplateConfig>
+}
+
 export interface CompanySettings {
   company: CompanyInfo
   banking: BankingInfo
@@ -66,4 +88,5 @@ export interface CompanySettings {
   terms: TermsInfo
   api: ApiInfo
   products: ProductsInfo
+  template: TemplateInfo
 }

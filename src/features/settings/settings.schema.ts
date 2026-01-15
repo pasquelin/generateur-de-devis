@@ -5,6 +5,7 @@ import { bankingSchema } from './schemas/banking.schema'
 import { companySchema } from './schemas/company.schema'
 import { insuranceSchema } from './schemas/insurance.schema'
 import { productsSchema } from './schemas/products.schema'
+import { templateInfoSchema } from './schemas/template.schema'
 import { termsSchema } from './schemas/terms.schema'
 
 export const settingsSchema = z.object({
@@ -14,6 +15,7 @@ export const settingsSchema = z.object({
   terms: termsSchema,
   api: apiSchema,
   products: productsSchema,
+  template: templateInfoSchema,
 })
 
 export type SettingsFormData = z.infer<typeof settingsSchema>
