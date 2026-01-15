@@ -13,6 +13,7 @@ interface DocumentStore {
     field: keyof import('../../types').DocumentLine,
     value: string | number,
   ) => void
+  deleteLine: (lineId: string) => void
   updateTitle: (title: string) => void
 }
 
@@ -71,6 +72,20 @@ export const useDocumentStore = create<DocumentStore>(set => ({
       })
 
       // Recalculer le total général
+      const newTotal = updatedLines.reduce((sum, line) => sum + line.total, 0)
+
+      return {
+        data: {
+          ...state.data,
+          lines: updatedLines,
+          total: newTotal,
+        },
+      }
+    }),
+
+  deleteLine: (lineId) =>
+    set(state => {
+      const updatedLines = state.data.lines.filter(line => line.id !== lineId)
       const newTotal = updatedLines.reduce((sum, line) => sum + line.total, 0)
 
       return {

@@ -62,6 +62,8 @@ export const ChatPanel = () => {
           notes: response.data.notes || '',
         }
 
+        console.log(response.data)
+
         // Mettre à jour le document
         setData(documentData)
 

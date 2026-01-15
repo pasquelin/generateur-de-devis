@@ -91,7 +91,7 @@ class AIService {
     const apiKey = api[`${providerId}Key` as keyof ApiInfo]
 
     // Vérifier que la clé existe
-    if (!apiKey || typeof apiKey !== 'string') {
+    if (!apiKey) {
       const providerName = providerId.charAt(0).toUpperCase() + providerId.slice(1)
       return {
         success: false,
@@ -109,7 +109,7 @@ class AIService {
     }
 
     // Vérifier que le provider est bien configuré
-    if (!this.currentProvider || !this.currentProvider.isConfigured()) {
+    if (!this.currentProvider?.isConfigured()) {
       return {
         success: false,
         error: 'Erreur de configuration du provider IA',

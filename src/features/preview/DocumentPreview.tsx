@@ -3,6 +3,7 @@ import { useDocumentPdf } from '../../hooks/useDocumentPdf.tsx'
 import { useDocumentStore } from './document.store'
 import { EditableField } from './EditableField'
 import { useEffect, useRef, useState } from 'react'
+import { Trash2 } from 'lucide-react'
 
 interface DocumentPreviewProps {
   data: DocumentData
@@ -13,7 +14,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
 
-  const { updateClient, updateLine } = useDocumentStore()
+  const { updateClient, updateLine, deleteLine } = useDocumentStore()
   const {
     headerSection,
     clientSection,
@@ -397,6 +398,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                       >
                         Total HT
                       </th>
+                      <th/>
                     </tr>
                   </thead>
                   <tbody>
@@ -453,6 +455,14 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                           }}
                         >
                           {line.total.toFixed(2)} €
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-xs btn-square btn-error btn-link"
+                            onClick={() => deleteLine(line.id)}
+                          >
+                            <Trash2 size={12} />
+                          </button>
                         </td>
                       </tr>
                     ))}
