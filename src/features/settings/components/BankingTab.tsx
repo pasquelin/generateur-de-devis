@@ -14,7 +14,7 @@ export const BankingTab = () => {
     <div className="space-y-6">
       {/* Information importante */}
       <div className="alert alert-soft alert-warning">
-        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+        <AlertCircle className="h-5 w-5 flex-shrink-0" />
         <div>
           <p className="font-semibold">Important</p>
           <p className="text-sm">
@@ -39,54 +39,56 @@ export const BankingTab = () => {
           />
         </div>
 
-        {/* IBAN */}
-        <div className="form-control w-full space-y-1">
-          <label className="label pt-0">
-            <span className="label-text font-medium">IBAN</span>
-          </label>
-          <input
-            type="text"
-            {...register('banking.iban')}
-            className={`input input-bordered w-full ${errors.banking?.iban ? 'input-error' : ''}`}
-            placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
-            maxLength={34}
-          />
-          {errors.banking?.iban ? (
-            <label className="label">
-              <span className="label-text-alt text-error">{errors.banking.iban.message}</span>
+        <div className="grid grid-cols-2 gap-4">
+          {/* IBAN */}
+          <div className="form-control w-full space-y-1">
+            <label className="label pt-0">
+              <span className="label-text font-medium">IBAN</span>
             </label>
-          ) : (
-            <label className="label">
-              <span className="label-text-alt text-base-content/60 text-xs">
-                Format français : FR suivi de 25 chiffres
-              </span>
-            </label>
-          )}
-        </div>
+            <input
+              type="text"
+              {...register('banking.iban')}
+              className={`input input-bordered w-full ${errors.banking?.iban ? 'input-error' : ''}`}
+              placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
+              maxLength={34}
+            />
+            {errors.banking?.iban ? (
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.banking.iban.message}</span>
+              </label>
+            ) : (
+              <label className="label">
+                <span className="label-text-alt text-base-content/60 text-xs">
+                  Format français : FR suivi de 25 chiffres
+                </span>
+              </label>
+            )}
+          </div>
 
-        {/* BIC / SWIFT */}
-        <div className="form-control w-full space-y-1">
-          <label className="label pt-0">
-            <span className="label-text font-medium">BIC / SWIFT</span>
-          </label>
-          <input
-            type="text"
-            {...register('banking.bic')}
-            className={`input input-bordered w-full ${errors.banking?.bic ? 'input-error' : ''}`}
-            placeholder="AGRIFRPP"
-            maxLength={11}
-          />
-          {errors.banking?.bic ? (
-            <label className="label">
-              <span className="label-text-alt text-error">{errors.banking.bic.message}</span>
+          {/* BIC / SWIFT */}
+          <div className="form-control w-full space-y-1">
+            <label className="label pt-0">
+              <span className="label-text font-medium">BIC / SWIFT</span>
             </label>
-          ) : (
-            <label className="label">
-              <span className="label-text-alt text-base-content/60 text-xs">
-                Code d'identification de la banque (8 ou 11 caractères)
-              </span>
-            </label>
-          )}
+            <input
+              type="text"
+              {...register('banking.bic')}
+              className={`input input-bordered w-full ${errors.banking?.bic ? 'input-error' : ''}`}
+              placeholder="AGRIFRPP"
+              maxLength={11}
+            />
+            {errors.banking?.bic ? (
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.banking.bic.message}</span>
+              </label>
+            ) : (
+              <label className="label">
+                <span className="label-text-alt text-base-content/60 text-xs">
+                  Code d'identification de la banque (8 ou 11 caractères)
+                </span>
+              </label>
+            )}
+          </div>
         </div>
       </div>
     </div>

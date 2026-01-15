@@ -10,12 +10,14 @@ import type {
   ProductsInfo,
   TermsInfo,
 } from './settings.types'
-import { DEFAULT_SETTINGS } from './settings.types'
 
 interface SettingsStore {
   settings: CompanySettings
   isModalOpen: boolean
   activeTab: number
+
+  // Getters
+  hasValidApiConfig: () => boolean
 
   // Actions
   updateSettings: (settings: CompanySettings) => void
@@ -33,57 +35,100 @@ interface SettingsStore {
   setActiveTab: (tab: number) => void
 }
 
+export const DEFAULT_SETTINGS: CompanySettings = {
+  company: {
+    name: '',
+    address: '',
+    postalCode: '',
+    city: '',
+    email: '',
+    siret: '',
+  },
+  banking: {},
+  insurance: {},
+  terms: {
+    vatNotApplicable: false,
+    defaultVatRate: '20',
+    quoteValidityDays: 30,
+    paymentTerms: 'À réception de facture',
+    paymentMethods: 'Virement bancaire, chèque',
+    depositRequired: false,
+    depositPercentage: 30,
+    latePenaltyRate: "3 fois le taux d'intérêt légal en vigueur",
+    recoveryFee: 40,
+  },
+  api: {
+    provider: 'openai',
+  },
+  products: {
+    items: [],
+  },
+}
+
 export const useSettingsStore = create<SettingsStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       settings: DEFAULT_SETTINGS,
       isModalOpen: false,
       activeTab: 0,
 
-      updateSettings: (settings) => set({ settings }),
+      // Getter pour vérifier si l'API est configurée
+      hasValidApiConfig: () => {
+        const { api } = get().settings
+        const provider = api.provider
 
-      updateCompany: (company) =>
-        set((state) => ({
+        if (!provider) return false
+
+        const apiKey = api[`${provider}Key` as keyof ApiInfo]
+        return Boolean(apiKey)
+      },
+
+      updateSettings: settings => {
+        set({ settings })
+      },
+
+      updateCompany: company =>
+        set(state => ({
           settings: {
             ...state.settings,
             company: { ...state.settings.company, ...company },
           },
         })),
 
-      updateBanking: (banking) =>
-        set((state) => ({
+      updateBanking: banking =>
+        set(state => ({
           settings: {
             ...state.settings,
             banking: { ...state.settings.banking, ...banking },
           },
         })),
 
-      updateInsurance: (insurance) =>
-        set((state) => ({
+      updateInsurance: insurance =>
+        set(state => ({
           settings: {
             ...state.settings,
             insurance: { ...state.settings.insurance, ...insurance },
           },
         })),
 
-      updateTerms: (terms) =>
-        set((state) => ({
+      updateTerms: terms =>
+        set(state => ({
           settings: {
             ...state.settings,
             terms: { ...state.settings.terms, ...terms },
           },
         })),
 
-      updateApi: (api) =>
-        set((state) => ({
+      updateApi: api =>
+        set(state => ({
           settings: {
             ...state.settings,
             api: { ...state.settings.api, ...api },
           },
         })),
 
-      updateProducts: (products) =>
-        set((state) => ({
+      updateProducts: products =>
+        set(state => ({
           settings: {
             ...state.settings,
             products: { ...state.settings.products, ...products },
@@ -96,11 +141,11 @@ export const useSettingsStore = create<SettingsStore>()(
 
       closeModal: () => set({ isModalOpen: false, activeTab: 0 }),
 
-      setActiveTab: (tab) => set({ activeTab: tab }),
+      setActiveTab: tab => set({ activeTab: tab }),
     }),
     {
       name: 'company-settings-storage',
-      partialize: (state) => ({ settings: state.settings }),
+      partialize: state => ({ settings: state.settings }),
     },
   ),
 )

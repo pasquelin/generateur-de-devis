@@ -1,4 +1,4 @@
-import { FileDown, FileSpreadsheet, Settings } from 'lucide-react'
+import { FileDown, Settings } from 'lucide-react'
 
 import { ChatPanel } from '../features/chat/ChatPanel'
 import { PreviewPanel } from '../features/preview/PreviewPanel'
@@ -7,7 +7,7 @@ import { SettingsModal } from '../features/settings/components/SettingsModal'
 import { useSettingsStore } from '../features/settings/settings.store'
 import { usePdfExport } from '../hooks/usePdfExport.tsx'
 import { ShareButton } from '../components/ShareButton.tsx'
-import { ThemeSelector } from '../components/ThemeSelector.tsx'
+import { ApiModal } from '../features/settings/components/ApiModal.tsx'
 
 export const MainLayout = () => {
   const { openModal } = useSettingsStore()
@@ -20,26 +20,36 @@ export const MainLayout = () => {
 
   return (
     <>
-      <div className="h-screen bg-base-300 flex flex-col">
-        <div className="navbar bg-base-100 px-6">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-primary">Générateur de devis (BETA test)</h1>
+      <div className="bg-base-300 flex h-screen flex-col">
+        <div className="navbar bg-base-100 px-4">
+          <div className="flex flex-1 flex-row items-center gap-2">
+            <img
+              src="/images/logo-small.png"
+              height={50}
+              width={72}
+              alt="Logo - générateur de devis"
+            />
+            <h1 className="from-primary to-primary/70 bg-linear-to-r bg-clip-text text-3xl font-bold text-transparent text-shadow-blue-50">
+              Générateur de devis
+            </h1>
+            <span className="-rotate-6 animate-pulse align-baseline text-sm font-light text-white">
+              BETA
+            </span>
           </div>
-          <div className="flex-none flex flex-row gap-2 items-center">
-            <button className="btn" onClick={openModal}>
-              <Settings size={18} />
+          <div className="flex flex-none flex-row items-center gap-4">
+            <button className="btn btn-warning" onClick={openModal}>
+              <Settings size={22} />
               Paramètres
             </button>
-            <ThemeSelector />
-            <button className="btn btn-primary ml-6" onClick={handleExportPdf}>
-              <FileDown size={18} />
+            <button className="btn btn-primary" onClick={handleExportPdf}>
+              <FileDown size={20} />
               Exporter votre devis en PDF
             </button>
           </div>
         </div>
         <main className="grow p-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
-            <div className="lg:col-span-5">
+          <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="relative lg:col-span-5">
               <ChatPanel />
             </div>
             <div className="lg:col-span-7">
@@ -49,8 +59,7 @@ export const MainLayout = () => {
         </main>
         <footer className="footer sm:footer-horizontal bg-base-100 items-center p-4">
           <aside className="grid-flow-col items-center">
-            <FileSpreadsheet size={36} />
-            <p>Copyright © {new Date().getFullYear()} - All right reserved</p>
+            Copyright © {new Date().getFullYear()} - All right reserved
           </aside>
           <nav className="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
             <ShareButton title="Partager moi" />
@@ -58,6 +67,7 @@ export const MainLayout = () => {
         </footer>
       </div>
       <SettingsModal />
+      <ApiModal />
     </>
   )
 }

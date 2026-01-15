@@ -24,5 +24,3 @@ export const termsSchema = z.object({
     .max(10000, 'Le montant semble anormalement élevé'),
   customFooterText: z.string().optional(),
 })
-
-export type TermsFormData = z.infer<typeof termsSchema>

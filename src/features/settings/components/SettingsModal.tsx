@@ -1,8 +1,9 @@
 import type { ComponentType } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
+import { useEffect } from 'react'
+import { FormProvider, useForm, useWatch } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Building, CreditCard, FileText, Key, Package, Shield, X } from 'lucide-react'
+import { Building, CreditCard, FileText, Key, Package, Shield, Briefcase, X } from 'lucide-react'
 
 import { type SettingsFormData, settingsSchema } from '../settings.schema'
 import { useSettingsStore } from '../settings.store'
@@ -12,6 +13,9 @@ import { CompanyTab } from './CompanyTab'
 import { InsuranceTab } from './InsuranceTab'
 import { ProductsTab } from './ProductsTab'
 import { TermsTab } from './TermsTab'
+import { BusinessExplanationTab } from './BusinessExplanationTab'
+import { validateApiKey } from '../utils/apiValidation'
+import type { ApiInfo } from '../settings.types.ts'
 
 interface TabConfig {
   id: number
@@ -27,6 +31,7 @@ const TABS: TabConfig[] = [
   { id: 3, label: 'Assurance', icon: Shield, component: InsuranceTab },
   { id: 4, label: 'Conditions', icon: FileText, component: TermsTab },
   { id: 5, label: 'Produits', icon: Package, component: ProductsTab },
+  { id: 6, label: 'Métier', icon: Briefcase, component: BusinessExplanationTab },
 ]
 
 export const SettingsModal = () => {
@@ -43,11 +48,72 @@ export const SettingsModal = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    control,
   } = methods
+
+  // Resynchroniser le formulaire quand les settings du store changent
+  useEffect(() => {
+    reset(settings)
+  }, [settings, reset])
+
+  // Watch pour validation réactive du tab API
+  const apiProvider = useWatch({
+    control,
+    name: 'api.provider',
+  })
+  const apiOpenaiKey = useWatch({
+    control,
+    name: 'api.openaiKey',
+  })
+  const apiClaudeKey = useWatch({
+    control,
+    name: 'api.claudeKey',
+  })
+  const apiGeminiKey = useWatch({
+    control,
+    name: 'api.geminiKey',
+  })
+  const apiMistralKey = useWatch({
+    control,
+    name: 'api.mistralKey',
+  })
+  const apiGroqKey = useWatch({
+    control,
+    name: 'api.groqKey',
+  })
 
   const onSubmit = async (data: SettingsFormData) => {
     try {
-      updateSettings(data)
+      // Nettoyage des clés : on ne garde que celle du provider actif
+      const cleanedApiData: Partial<ApiInfo> = {
+        provider: data.api.provider,
+      }
+
+      // Ne sauvegarder que la clé du provider sélectionné
+      const provider = data.api.provider || 'openai'
+      const keyField = `${provider}Key` as keyof ApiInfo
+
+      if (data.api[keyField]) {
+        cleanedApiData[keyField] = data.api[keyField]
+      }
+
+      // Garder les clés existantes des autres providers (ne pas les écraser)
+      const currentApiSettings = settings.api
+      const providers = ['openai', 'claude', 'gemini', 'mistral', 'groq']
+
+      providers.forEach(p => {
+        const key = `${p}Key` as keyof ApiInfo
+        if (p !== provider && currentApiSettings[key]) {
+          cleanedApiData[key] = currentApiSettings[key]
+        }
+      })
+
+      // Mettre à jour les settings avec les données nettoyées
+      updateSettings({
+        ...data,
+        api: cleanedApiData as ApiInfo,
+      })
+
       closeModal()
     } catch (error) {
       console.error('Error saving settings:', error)
@@ -59,20 +125,35 @@ export const SettingsModal = () => {
     closeModal()
   }
 
+  // Validation personnalisée pour le tab API (réactive)
+  const hasApiErrors = (): boolean => {
+    const provider = apiProvider || 'openai'
+    return validateApiKey(
+      provider,
+      apiOpenaiKey,
+      apiClaudeKey,
+      apiGeminiKey,
+      apiMistralKey,
+      apiGroqKey,
+    )
+  }
+
   // Check if a tab has errors
   const hasTabErrors = (tabId: number): boolean => {
     switch (tabId) {
       case 0:
-        return !!errors.api
+        return hasApiErrors() // Validation réactive pour API
       case 1:
         return !!errors.company
       case 2:
-        return !!errors.banking
+        return !!errors.company?.businessExplanation
       case 3:
-        return !!errors.insurance
+        return !!errors.banking
       case 4:
-        return !!errors.terms
+        return !!errors.insurance
       case 5:
+        return !!errors.terms
+      case 6:
         return !!errors.products
       default:
         return false
@@ -85,24 +166,24 @@ export const SettingsModal = () => {
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-4xl max-h-[90vh] flex flex-col p-0">
+      <div className="modal-box flex max-h-[90vh] max-w-4xl flex-col p-0">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-base-300">
+        <div className="border-base-300 flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building className="w-5 h-5 text-primary" />
+            <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <Building className="text-primary h-5 w-5" />
             </div>
             <h3 className="text-xl font-bold">Paramètres Entreprise</h3>
           </div>
           <button onClick={handleClose} className="btn btn-ghost btn-sm btn-circle">
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-base-300 px-6">
+        <div className="border-base-300 bg-base-200 border-b px-6">
           <div role="tablist" className="tabs tabs-bordered">
-            {TABS.map((tab) => {
+            {TABS.map(tab => {
               const Icon = tab.icon
               const hasError = hasTabErrors(tab.id)
               return (
@@ -113,7 +194,7 @@ export const SettingsModal = () => {
                   className={`tab gap-2 ${activeTab === tab.id ? 'tab-active' : ''}`}
                   onClick={() => setActiveTab(tab.id)}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="h-4 w-4" />
                   {tab.label}
                   {hasError && (
                     <div className="badge badge-error badge-xs" title="Erreurs de validation" />
@@ -126,13 +207,13 @@ export const SettingsModal = () => {
 
         {/* Content */}
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto p-6">
               <ActiveTabComponent />
             </div>
 
             {/* Footer Actions */}
-            <div className="border-t border-base-300 p-6 flex justify-end gap-3">
+            <div className="border-base-300 flex justify-end gap-3 border-t px-6 py-4">
               <button type="button" onClick={handleClose} className="btn btn-ghost">
                 Annuler
               </button>

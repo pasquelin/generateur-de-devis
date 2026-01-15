@@ -10,6 +10,3 @@ export const productSchema = z.object({
 export const productsSchema = z.object({
   items: z.array(productSchema),
 })
-
-export type ProductFormData = z.infer<typeof productSchema>
-export type ProductsFormData = z.infer<typeof productsSchema>

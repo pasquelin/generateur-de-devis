@@ -5,7 +5,6 @@ import type { AIMessage } from '../../ai/ai.types'
 import { Panel } from '../../components/Panel'
 import type { DocumentData } from '../../types'
 import { useDocumentStore } from '../preview/document.store'
-import { useSettingsStore } from '../settings/settings.store'
 import { ChatInput } from './ChatInput'
 import { ChatMessage } from './ChatMessage'
 import { VoiceChatInput } from './VoiceChatInput'
@@ -14,7 +13,6 @@ import { useChatStore } from './chat.store'
 export const ChatPanel = () => {
   const { messages, addMessage } = useChatStore()
   const { setData } = useDocumentStore()
-  const { settings } = useSettingsStore()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -23,23 +21,9 @@ export const ChatPanel = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Configurer la clé API
-  useEffect(() => {
-    if (settings.api.openaiKey) {
-      aiService.setApiKey(settings.api.openaiKey)
-    }
-  }, [settings.api.openaiKey])
-
   const handleSendMessage = async (content: string): Promise<string | undefined> => {
     // Ajouter le message utilisateur
     addMessage(content, 'user')
-
-    // Vérifier la clé API
-    if (!settings.api.openaiKey) {
-      const errorMsg = '⚠️ Veuillez configurer votre clé API OpenAI dans les paramètres.'
-      addMessage(errorMsg, 'assistant')
-      return errorMsg
-    }
 
     // Indiquer que le traitement est en cours
     setIsProcessing(true)
@@ -48,17 +32,13 @@ export const ChatPanel = () => {
       // Construire l'historique de conversation pour l'IA
       const conversationHistory: AIMessage[] = messages
         .concat([{ id: Date.now().toString(), role: 'user', content, timestamp: new Date() }])
-        .map((msg) => ({
+        .map(msg => ({
           role: msg.role as 'user' | 'assistant',
           content: msg.content,
         }))
 
       // Appeler l'IA
-      const response = await aiService.generateDocument(
-        conversationHistory,
-        undefined,
-        settings.products.items,
-      )
+      const response = await aiService.generateDocument(conversationHistory)
 
       if (response.success && response.data) {
         // Convertir les données IA en format DocumentData
@@ -104,68 +84,71 @@ export const ChatPanel = () => {
   }
 
   return (
-    <Panel className="overflow-hidden h-full">
-      <div className="flex flex-col h-full gap-4">
+    <Panel className="h-full overflow-hidden">
+      <div className="flex h-full flex-col gap-4">
         {/* Historique des messages */}
-        <div className="grow relative overflow-y-auto">
-          <div className="absolute mb-4 space-y-4 w-full">
+        <div className="relative grow overflow-y-auto">
+          <div className="absolute mb-4 w-full space-y-4">
             {messages.length === 0 ? (
-              <div className="m-20 text-center space-y-6">
+              <div className="m-20 space-y-6 text-center">
                 {/* Intro */}
-                <p className="text-xl font-semibold text-base-content/70">
+                <p className="text-base-content/70 text-xl font-semibold">
                   Expliquez simplement votre besoin dans la conversation
                 </p>
 
                 {/* Interaction modes */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   {/* Text */}
-                  <div className="rounded-xl border border-base-300 p-4 bg-base-100">
+                  <div className="border-base-300 bg-base-100 rounded-xl border p-4">
                     <div className="text-lg">⌨️</div>
-                    <h3 className="font-semibold mt-1">Par écrit</h3>
-                    <p className="text-sm text-base-content/60 mt-1">
+                    <h2 className="mt-1 text-xl font-semibold">Par écrit</h2>
+                    <p className="text-base-content/60 mt-1 text-sm">
                       Écrivez votre demande comme dans une application de messagerie.
                     </p>
                   </div>
 
                   {/* Audio */}
-                  <div className="rounded-xl border border-base-300 p-4 bg-base-100">
+                  <div className="border-base-300 bg-base-100 rounded-xl border p-4">
                     <div className="text-lg">🎤</div>
-                    <h3 className="font-semibold mt-1">Par audio</h3>
-                    <p className="text-sm text-base-content/60 mt-1">
+                    <h2 className="mt-1 text-xl font-semibold">Par audio</h2>
+                    <p className="text-base-content/60 mt-1 text-sm">
                       Cliquez sur le micro et expliquez votre besoin à voix haute.
                     </p>
                   </div>
                 </div>
 
                 {/* Audio modes */}
-                <div className="rounded-xl bg-base-200/60 p-5 text-left">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <div className="bg-base-200/60 rounded-xl p-5 text-left">
+                  <h4 className="mb-3 flex items-center gap-2 text-xl font-semibold">
                     🎧 Modes audio disponibles
                   </h4>
 
-                  <ul className="space-y-2 text-sm text-base-content/70">
-                    <li className="flex gap-2">
-                      <span className="font-medium">• Mode manuel :</span>
-                      <span>cliquez sur le micro à chaque nouvelle phrase.</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="font-medium">• Mode continu :</span>
-                      <span>discutez librement sans recliquer après chaque réponse.</span>
-                    </li>
-                  </ul>
+                  <div className="text-base-content/70">
+                    <div className="font-medium">Mode manuel</div>
+                    <div className="text-sm italic">
+                      cliquez sur le micro à chaque nouvelle phrase.
+                    </div>
+                  </div>
+                  <div className="divider my-3"></div>
+                  <div className="text-base-content/70">
+                    <div className="font-medium">Mode continu</div>
+                    <div className="text-sm italic">
+                      discutez librement sans recliquer après chaque réponse.
+                    </div>
+                  </div>
                 </div>
 
                 {/* Security note */}
-                <p className="text-xs text-base-content/40">
+                <p className="text-base-content/40 text-xs">
                   🔒 Le micro se coupe automatiquement après quelques secondes de silence pour des
                   raisons de sécurité.
                 </p>
               </div>
             ) : (
-              messages.map((message) => <ChatMessage key={message.id} message={message} />)
+              messages.map(message => <ChatMessage key={message.id} message={message} />)
             )}
             {isProcessing && (
-              <div className="flex items-center gap-2 px-4 py-3 bg-base-200 rounded-lg">
+              <div className="bg-base-200 flex items-center gap-2 rounded-lg px-4 py-3">
                 <div className="loading loading-spinner loading-sm" />
                 <span className="text-sm">L'IA analyse votre demande...</span>
               </div>
@@ -173,6 +156,7 @@ export const ChatPanel = () => {
             <div ref={messagesEndRef} />
           </div>
         </div>
+
         {/* Input selon le mode */}
         <VoiceChatInput onSendMessage={handleSendMessage} />
         <ChatInput onSendMessage={handleSendMessage} />

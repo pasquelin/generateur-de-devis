@@ -246,6 +246,6 @@ export const useDocumentConfig = (
     calculations,
     metadata,
     missingFields,
-    sections: sections.filter((s) => s.visible),
+    sections: sections.filter(s => s.visible),
   }
 }

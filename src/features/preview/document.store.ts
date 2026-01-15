@@ -8,7 +8,12 @@ interface DocumentStore {
   setData: (data: DocumentData) => void
   generateDocumentNumber: () => void
   updateClient: (field: keyof DocumentData['client'], value: string) => void
-  updateLine: (lineId: string, field: keyof import('../../types').DocumentLine, value: string | number) => void
+  updateLine: (
+    lineId: string,
+    field: keyof import('../../types').DocumentLine,
+    value: string | number,
+  ) => void
+  deleteLine: (lineId: string) => void
   updateTitle: (title: string) => void
 }
 
@@ -33,14 +38,14 @@ const defaultData: DocumentData = {
   total: 0,
 }
 
-export const useDocumentStore = create<DocumentStore>((set) => ({
+export const useDocumentStore = create<DocumentStore>(set => ({
   data: defaultData,
   documentNumber: generateNumber(),
-  setData: (data) => set({ data }),
+  setData: data => set({ data }),
   generateDocumentNumber: () => set({ documentNumber: generateNumber() }),
 
   updateClient: (field, value) =>
-    set((state) => ({
+    set(state => ({
       data: {
         ...state.data,
         client: {
@@ -51,8 +56,8 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
     })),
 
   updateLine: (lineId, field, value) =>
-    set((state) => {
-      const updatedLines = state.data.lines.map((line) => {
+    set(state => {
+      const updatedLines = state.data.lines.map(line => {
         if (line.id === lineId) {
           const updatedLine = { ...line, [field]: value }
 
@@ -78,8 +83,22 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       }
     }),
 
-  updateTitle: (title) =>
-    set((state) => ({
+  deleteLine: lineId =>
+    set(state => {
+      const updatedLines = state.data.lines.filter(line => line.id !== lineId)
+      const newTotal = updatedLines.reduce((sum, line) => sum + line.total, 0)
+
+      return {
+        data: {
+          ...state.data,
+          lines: updatedLines,
+          total: newTotal,
+        },
+      }
+    }),
+
+  updateTitle: title =>
+    set(state => ({
       data: {
         ...state.data,
         title,

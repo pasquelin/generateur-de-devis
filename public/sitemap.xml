@@ -7,12 +7,12 @@
 
     <!-- Page principale -->
     <url>
-        <loc>https://www.generateur-de-devis.fr/</loc>
+        <loc>https://www.generateur-de-devis.fr</loc>
         <lastmod>2025-01-14</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
         <image:image>
-            <image:loc>https://www.generateur-de-devis.fr/og-image.jpg</image:loc>
+            <image:loc>https://www.generateur-de-devis.fr/images/logo.png</image:loc>
             <image:title>Générateur de Devis IA - Interface</image:title>
             <image:caption>Application de génération automatique de devis avec intelligence artificielle</image:caption>
         </image:image>

@@ -1,15 +1,14 @@
-// ShareButton.tsx
-import React, { useState } from 'react'
+import { type FC, useState } from 'react'
 import { Share2 } from 'lucide-react'
 import {
-  FacebookShareButton,
-  TwitterShareButton,
-  LinkedinShareButton,
-  WhatsappShareButton,
   FacebookIcon,
-  TwitterIcon,
+  FacebookShareButton,
   LinkedinIcon,
+  LinkedinShareButton,
+  TwitterIcon,
+  TwitterShareButton,
   WhatsappIcon,
+  WhatsappShareButton,
 } from 'react-share'
 import { cn } from '../utils/cn.ts'
 
@@ -30,8 +29,8 @@ export interface ShareButtonProps {
   onShareError?: (error: Error) => void
 }
 
-export const ShareButton: React.FC<ShareButtonProps> = ({
-  url = typeof window !== 'undefined' ? window.location.href : '',
+export const ShareButton: FC<ShareButtonProps> = ({
+  url = '/',
   title,
   description,
   iconSize = 40,
@@ -61,43 +60,66 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
     }
   }
 
-  // Fallback : boutons réseaux sociaux
   return (
-    <div className={`share-buttons-fallback ${className}`}>
-      <FacebookShareButton url={url} title={title} onClick={() => onShareSuccess?.()}>
-        <FacebookIcon size={iconSize} round />
-      </FacebookShareButton>
-
-      <TwitterShareButton url={url} title={title} onClick={() => onShareSuccess?.()}>
-        <TwitterIcon size={iconSize} round />
-      </TwitterShareButton>
-
-      <LinkedinShareButton
-        url={url}
-        title={title}
-        summary={description}
-        onClick={() => onShareSuccess?.()}
-      >
-        <LinkedinIcon size={iconSize} round />
-      </LinkedinShareButton>
-
-      <WhatsappShareButton
-        url={url}
-        title={title}
-        separator=" - "
-        onClick={() => onShareSuccess?.()}
-      >
-        <WhatsappIcon size={iconSize} round />
-      </WhatsappShareButton>
-      {typeof navigator !== 'undefined' && 'share' in navigator && (
-        <button
-          onClick={handleNativeShare}
-          disabled={isSharing}
-          className={cn('btn btn-circle btn-accent', className)}
-          aria-label="Autres"
+    <div className={cn('flex items-center gap-3', className)}>
+      <div className="transition-transform duration-200 hover:scale-110">
+        <FacebookShareButton
+          url={url}
+          title={title}
+          onClick={onShareSuccess}
+          className="btn btn-circle"
         >
-          <Share2 size={22} />
-        </button>
+          <FacebookIcon size={iconSize} round />
+        </FacebookShareButton>
+      </div>
+
+      <div className="transition-transform duration-200 hover:scale-110">
+        <TwitterShareButton
+          url={url}
+          title={title}
+          onClick={onShareSuccess}
+          className="btn btn-circle"
+        >
+          <TwitterIcon size={iconSize} round />
+        </TwitterShareButton>
+      </div>
+
+      <div className="transition-transform duration-200 hover:scale-110">
+        <LinkedinShareButton
+          url={url}
+          title={title}
+          summary={description}
+          onClick={onShareSuccess}
+          className="btn btn-circle"
+        >
+          <LinkedinIcon size={iconSize} round />
+        </LinkedinShareButton>
+      </div>
+
+      <div className="transition-transform duration-200 hover:scale-110">
+        <WhatsappShareButton
+          url={url}
+          title={title}
+          separator=" - "
+          onClick={onShareSuccess}
+          className="btn btn-circle"
+        >
+          <WhatsappIcon size={iconSize} round />
+        </WhatsappShareButton>
+      </div>
+
+      {/* Bouton natif de partage */}
+      {typeof navigator !== 'undefined' && 'share' in navigator && (
+        <div className="transition-transform duration-200 hover:scale-110">
+          <button
+            onClick={handleNativeShare}
+            disabled={isSharing}
+            className={cn('btn btn-circle btn-accent', className)}
+            aria-label="Autres"
+          >
+            <Share2 size={22} />
+          </button>
+        </div>
       )}
     </div>
   )
