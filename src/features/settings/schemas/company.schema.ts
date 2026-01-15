@@ -44,4 +44,5 @@ export const companySchema = z.object({
     ),
   rcs: z.string().optional(),
   capital: z.string().optional(),
+  businessExplanation: z.string().optional(),
 })

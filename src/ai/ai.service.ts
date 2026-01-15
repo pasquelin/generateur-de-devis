@@ -78,7 +78,6 @@ class AIService {
   async generateDocument(
     conversationHistory: AIMessage[],
     config?: Partial<AIServiceConfig>,
-    products?: Product[],
   ): Promise<AIResponse> {
     // Récupérer les settings depuis le store
     const { settings } = useSettingsStore.getState()
@@ -116,11 +115,20 @@ class AIService {
       }
     }
 
+    console.log(
+      SYSTEM_PROMPT.replace(
+        '{{businessExplanation}}',
+        settings.company.businessExplanation || 'aucune information sur le métier',
+      ).replace('{{products}}', this.formatProducts(settings.products.items)),
+    )
+
     try {
       return await this.currentProvider.generateDocument(
         conversationHistory,
-        SYSTEM_PROMPT,
-        products,
+        SYSTEM_PROMPT.replace(
+          '{{businessExplanation}}',
+          settings.company.businessExplanation || 'aucune information sur le métier',
+        ).replace('{{products}}', this.formatProducts(settings.products.items)),
         config,
       )
     } catch (error) {
@@ -129,6 +137,16 @@ class AIService {
         error: error instanceof Error ? error.message : 'Erreur inconnue',
       }
     }
+  }
+
+  private formatProducts(products?: Product[]): string {
+    if (!products?.length) return '\n\nAucun produit défini.'
+    return (
+      '\n\nProduits disponibles:\n' +
+      products
+        .map(p => `- ${p.title} (${p.price}€)${p.description ? ': ' + p.description : ''}`)
+        .join('\n')
+    )
   }
 }
 

@@ -1,6 +1,5 @@
 import type { AIProvider, ProviderMetadata } from './provider.type.ts'
 import type { AIDocumentData, AIMessage, AIResponse, AIServiceConfig } from '../ai.types'
-import type { Product } from '../../features/settings/settings.types'
 
 export class GeminiProvider implements AIProvider {
   private apiKey: string | null = null
@@ -27,7 +26,6 @@ export class GeminiProvider implements AIProvider {
   async generateDocument(
     conversationHistory: AIMessage[],
     systemPrompt: string,
-    products?: Product[],
     config?: Partial<AIServiceConfig>,
   ): Promise<AIResponse> {
     if (!this.isConfigured()) {
@@ -38,10 +36,8 @@ export class GeminiProvider implements AIProvider {
     }
 
     try {
-      const productsText = this.formatProducts(products)
-
       // Gemini utilise un format différent
-      const contents = this.convertToGeminiFormat(conversationHistory, systemPrompt + productsText)
+      const contents = this.convertToGeminiFormat(conversationHistory, systemPrompt)
 
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 30000)
@@ -157,16 +153,6 @@ export class GeminiProvider implements AIProvider {
     }
 
     return geminiMessages
-  }
-
-  private formatProducts(products?: Product[]): string {
-    if (!products?.length) return '\n\nAucun produit défini.'
-    return (
-      '\n\nProduits disponibles:\n' +
-      products
-        .map(p => `- ${p.title} (${p.price}€)${p.description ? ': ' + p.description : ''}`)
-        .join('\n')
-    )
   }
 
   private parseResponse(content: string): AIResponse {

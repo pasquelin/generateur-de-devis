@@ -11,6 +11,7 @@ export interface CompanyInfo {
   vatNumber?: string
   rcs?: string
   capital?: string
+  businessExplanation?: string
 }
 
 export interface BankingInfo {

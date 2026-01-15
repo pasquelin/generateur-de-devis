@@ -1,6 +1,5 @@
 import type { AIProvider, ProviderMetadata } from './provider.type.ts'
 import type { AIDocumentData, AIMessage, AIResponse, AIServiceConfig } from '../ai.types'
-import type { Product } from '../../features/settings/settings.types'
 
 export class ClaudeProvider implements AIProvider {
   private apiKey: string | null = null
@@ -31,7 +30,6 @@ export class ClaudeProvider implements AIProvider {
   async generateDocument(
     conversationHistory: AIMessage[],
     systemPrompt: string,
-    products?: Product[],
     config?: Partial<AIServiceConfig>,
   ): Promise<AIResponse> {
     if (!this.isConfigured()) {
@@ -42,8 +40,6 @@ export class ClaudeProvider implements AIProvider {
     }
 
     try {
-      const productsText = this.formatProducts(products)
-
       // Claude utilise un format différent : system séparé des messages
       const userMessages = conversationHistory.filter(m => m.role !== 'system')
 
@@ -60,7 +56,7 @@ export class ClaudeProvider implements AIProvider {
           },
           body: JSON.stringify({
             model: config?.model || this.metadata.defaultModel,
-            system: systemPrompt + productsText,
+            system: systemPrompt,
             messages: userMessages,
             max_tokens: config?.maxTokens || 2000,
             temperature: config?.temperature ?? 0.3,
@@ -135,16 +131,6 @@ export class ClaudeProvider implements AIProvider {
         error: error instanceof Error ? error.message : 'Erreur inconnue',
       }
     }
-  }
-
-  private formatProducts(products?: Product[]): string {
-    if (!products?.length) return '\n\nAucun produit défini.'
-    return (
-      '\n\nProduits disponibles:\n' +
-      products
-        .map(p => `- ${p.title} (${p.price}€)${p.description ? ': ' + p.description : ''}`)
-        .join('\n')
-    )
   }
 
   private parseResponse(content: string): AIResponse {

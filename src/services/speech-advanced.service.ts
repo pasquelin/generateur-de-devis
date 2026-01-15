@@ -37,7 +37,7 @@ export const startAdvancedSpeechRecognition = (
   }
 
   // Résultats (intermédiaires et finaux)
-  recognition.onresult = (event) => {
+  recognition.onresult = event => {
     let interimTranscript = ''
     let finalTranscript = ''
 
@@ -64,7 +64,7 @@ export const startAdvancedSpeechRecognition = (
   }
 
   // Gestion des erreurs
-  recognition.onerror = (event) => {
+  recognition.onerror = event => {
     let errorMessage = event.error
 
     switch (event.error) {

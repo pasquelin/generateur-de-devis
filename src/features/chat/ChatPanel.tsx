@@ -5,7 +5,6 @@ import type { AIMessage } from '../../ai/ai.types'
 import { Panel } from '../../components/Panel'
 import type { DocumentData } from '../../types'
 import { useDocumentStore } from '../preview/document.store'
-import { useSettingsStore } from '../settings/settings.store'
 import { ChatInput } from './ChatInput'
 import { ChatMessage } from './ChatMessage'
 import { VoiceChatInput } from './VoiceChatInput'
@@ -14,7 +13,6 @@ import { useChatStore } from './chat.store'
 export const ChatPanel = () => {
   const { messages, addMessage } = useChatStore()
   const { setData } = useDocumentStore()
-  const { settings } = useSettingsStore()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -40,11 +38,7 @@ export const ChatPanel = () => {
         }))
 
       // Appeler l'IA
-      const response = await aiService.generateDocument(
-        conversationHistory,
-        undefined,
-        settings.products.items,
-      )
+      const response = await aiService.generateDocument(conversationHistory)
 
       if (response.success && response.data) {
         // Convertir les données IA en format DocumentData
@@ -61,8 +55,6 @@ export const ChatPanel = () => {
           total: response.data.lines.reduce((sum, line) => sum + line.quantity * line.unitPrice, 0),
           notes: response.data.notes || '',
         }
-
-        console.log(response.data)
 
         // Mettre à jour le document
         setData(documentData)
@@ -109,7 +101,7 @@ export const ChatPanel = () => {
                   {/* Text */}
                   <div className="border-base-300 bg-base-100 rounded-xl border p-4">
                     <div className="text-lg">⌨️</div>
-                    <h3 className="mt-1 text-xl font-semibold">Par écrit</h3>
+                    <h2 className="mt-1 text-xl font-semibold">Par écrit</h2>
                     <p className="text-base-content/60 mt-1 text-sm">
                       Écrivez votre demande comme dans une application de messagerie.
                     </p>
@@ -118,7 +110,7 @@ export const ChatPanel = () => {
                   {/* Audio */}
                   <div className="border-base-300 bg-base-100 rounded-xl border p-4">
                     <div className="text-lg">🎤</div>
-                    <h3 className="mt-1 text-xl font-semibold">Par audio</h3>
+                    <h2 className="mt-1 text-xl font-semibold">Par audio</h2>
                     <p className="text-base-content/60 mt-1 text-sm">
                       Cliquez sur le micro et expliquez votre besoin à voix haute.
                     </p>

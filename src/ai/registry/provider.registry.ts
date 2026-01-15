@@ -51,7 +51,7 @@ export class ProviderRegistry {
    * @returns Tableau des métadonnées de tous les providers
    */
   getProvidersMetadata() {
-    return this.listProviders().map((p) => p.metadata)
+    return this.listProviders().map(p => p.metadata)
   }
 
   /**

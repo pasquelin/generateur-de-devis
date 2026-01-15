@@ -54,28 +54,28 @@ export const useVoiceChatStore = create<VoiceChatStore>((set, get) => ({
   autoMode: false,
 
   // Définir l'état
-  setState: (state) => {
+  setState: state => {
     set({ state, error: state === 'error' ? get().error : null })
   },
 
   // Définir la transcription
-  setTranscript: (transcript) => {
+  setTranscript: transcript => {
     set({ currentTranscript: transcript })
   },
 
   // Définir la réponse
-  setResponse: (response) => {
+  setResponse: response => {
     set({ currentResponse: response })
   },
 
   // Définir une erreur
-  setError: (error) => {
+  setError: error => {
     set({ error, state: 'error' })
   },
 
   // Ajouter à l'historique
   addToHistory: (role, content) => {
-    set((state) => ({
+    set(state => ({
       conversationHistory: [...state.conversationHistory, { role, content, timestamp: new Date() }],
     }))
   },
@@ -86,13 +86,13 @@ export const useVoiceChatStore = create<VoiceChatStore>((set, get) => ({
   },
 
   // Enregistrer le service de reconnaissance
-  setRecognitionService: (service) => {
+  setRecognitionService: service => {
     set({ recognitionService: service })
   },
 
   // Basculer le mode auto
   toggleAutoMode: () => {
-    set((state) => ({ autoMode: !state.autoMode }))
+    set(state => ({ autoMode: !state.autoMode }))
   },
 
   // Réinitialiser

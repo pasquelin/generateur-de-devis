@@ -1,15 +1,4 @@
 import type { AIMessage, AIResponse, AIServiceConfig } from '../ai.types'
-import type { Product } from '../../features/settings/settings.types'
-
-/**
- * Configuration minimale d'un provider
- */
-export interface ProviderConfig {
-  apiKey: string
-  model?: string
-  maxTokens?: number
-  temperature?: number
-}
 
 /**
  * Métadonnées d'un provider
@@ -50,7 +39,6 @@ export interface AIProvider {
   generateDocument(
     conversationHistory: AIMessage[],
     systemPrompt: string,
-    products?: Product[],
     config?: Partial<AIServiceConfig>,
   ): Promise<AIResponse>
 

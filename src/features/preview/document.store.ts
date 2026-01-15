@@ -83,7 +83,7 @@ export const useDocumentStore = create<DocumentStore>(set => ({
       }
     }),
 
-  deleteLine: (lineId) =>
+  deleteLine: lineId =>
     set(state => {
       const updatedLines = state.data.lines.filter(line => line.id !== lineId)
       const newTotal = updatedLines.reduce((sum, line) => sum + line.total, 0)

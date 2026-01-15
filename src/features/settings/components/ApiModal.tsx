@@ -1,4 +1,4 @@
-import { FormProvider, useForm } from 'react-hook-form'
+import { FormProvider, useForm, useWatch } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Key, X } from 'lucide-react'
@@ -27,21 +27,34 @@ export const ApiModal = () => {
     handleSubmit,
     formState: { isSubmitting },
     reset,
-    watch,
+    control,
   } = methods
 
-  // Resynchroniser le formulaire quand les settings du store changent
-  useEffect(() => {
-    reset(settings)
-  }, [settings, reset])
-
   // Watch pour validation réactive du tab API
-  const apiProvider = watch('api.provider')
-  const apiOpenaiKey = watch('api.openaiKey')
-  const apiClaudeKey = watch('api.claudeKey')
-  const apiGeminiKey = watch('api.geminiKey')
-  const apiMistralKey = watch('api.mistralKey')
-  const apiGroqKey = watch('api.groqKey')
+  const apiProvider = useWatch({
+    control,
+    name: 'api.provider',
+  })
+  const apiOpenaiKey = useWatch({
+    control,
+    name: 'api.openaiKey',
+  })
+  const apiClaudeKey = useWatch({
+    control,
+    name: 'api.claudeKey',
+  })
+  const apiGeminiKey = useWatch({
+    control,
+    name: 'api.geminiKey',
+  })
+  const apiMistralKey = useWatch({
+    control,
+    name: 'api.mistralKey',
+  })
+  const apiGroqKey = useWatch({
+    control,
+    name: 'api.groqKey',
+  })
 
   const hasApiErrors = (): boolean => {
     const provider = apiProvider || 'openai'
@@ -95,13 +108,18 @@ export const ApiModal = () => {
     closeModal()
   }
 
+  // Resynchroniser le formulaire quand les settings du store changent
+  useEffect(() => {
+    reset(settings)
+  }, [settings, reset])
+
   if (!isModalOpen) return null
 
   return (
     <div className="modal modal-open">
       <div className="modal-box flex max-h-[90vh] max-w-2xl flex-col p-0">
         {/* Header */}
-        <div className="border-base-300 flex items-center justify-between border-b p-6">
+        <div className="border-base-300 flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
               <Key className="text-primary h-5 w-5" />
@@ -121,7 +139,7 @@ export const ApiModal = () => {
             </div>
 
             {/* Footer Actions */}
-            <div className="border-base-300 flex justify-end gap-3 border-t p-6">
+            <div className="border-base-300 flex justify-end gap-3 border-t px-6 py-4">
               <button type="button" onClick={handleClose} className="btn btn-ghost">
                 Annuler
               </button>

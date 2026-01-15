@@ -1,9 +1,9 @@
 import type { ComponentType } from 'react'
 import { useEffect } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
+import { FormProvider, useForm, useWatch } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Building, CreditCard, FileText, Key, Package, Shield, X } from 'lucide-react'
+import { Building, CreditCard, FileText, Key, Package, Shield, Briefcase, X } from 'lucide-react'
 
 import { type SettingsFormData, settingsSchema } from '../settings.schema'
 import { useSettingsStore } from '../settings.store'
@@ -13,6 +13,7 @@ import { CompanyTab } from './CompanyTab'
 import { InsuranceTab } from './InsuranceTab'
 import { ProductsTab } from './ProductsTab'
 import { TermsTab } from './TermsTab'
+import { BusinessExplanationTab } from './BusinessExplanationTab'
 import { validateApiKey } from '../utils/apiValidation'
 import type { ApiInfo } from '../settings.types.ts'
 
@@ -30,13 +31,12 @@ const TABS: TabConfig[] = [
   { id: 3, label: 'Assurance', icon: Shield, component: InsuranceTab },
   { id: 4, label: 'Conditions', icon: FileText, component: TermsTab },
   { id: 5, label: 'Produits', icon: Package, component: ProductsTab },
+  { id: 6, label: 'Métier', icon: Briefcase, component: BusinessExplanationTab },
 ]
 
 export const SettingsModal = () => {
   const { isModalOpen, closeModal, settings, updateSettings, activeTab, setActiveTab } =
     useSettingsStore()
-
-  console.log('---',settings)
 
   const methods = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
@@ -48,7 +48,7 @@ export const SettingsModal = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    watch,
+    control,
   } = methods
 
   // Resynchroniser le formulaire quand les settings du store changent
@@ -57,12 +57,30 @@ export const SettingsModal = () => {
   }, [settings, reset])
 
   // Watch pour validation réactive du tab API
-  const apiProvider = watch('api.provider')
-  const apiOpenaiKey = watch('api.openaiKey')
-  const apiClaudeKey = watch('api.claudeKey')
-  const apiGeminiKey = watch('api.geminiKey')
-  const apiMistralKey = watch('api.mistralKey')
-  const apiGroqKey = watch('api.groqKey')
+  const apiProvider = useWatch({
+    control,
+    name: 'api.provider',
+  })
+  const apiOpenaiKey = useWatch({
+    control,
+    name: 'api.openaiKey',
+  })
+  const apiClaudeKey = useWatch({
+    control,
+    name: 'api.claudeKey',
+  })
+  const apiGeminiKey = useWatch({
+    control,
+    name: 'api.geminiKey',
+  })
+  const apiMistralKey = useWatch({
+    control,
+    name: 'api.mistralKey',
+  })
+  const apiGroqKey = useWatch({
+    control,
+    name: 'api.groqKey',
+  })
 
   const onSubmit = async (data: SettingsFormData) => {
     try {
@@ -128,19 +146,19 @@ export const SettingsModal = () => {
       case 1:
         return !!errors.company
       case 2:
-        return !!errors.banking
+        return !!errors.company?.businessExplanation
       case 3:
-        return !!errors.insurance
+        return !!errors.banking
       case 4:
-        return !!errors.terms
+        return !!errors.insurance
       case 5:
+        return !!errors.terms
+      case 6:
         return !!errors.products
       default:
         return false
     }
   }
-
-  console.log(settings.api.provider)
 
   if (!isModalOpen) return null
 
@@ -150,7 +168,7 @@ export const SettingsModal = () => {
     <div className="modal modal-open">
       <div className="modal-box flex max-h-[90vh] max-w-4xl flex-col p-0">
         {/* Header */}
-        <div className="border-base-300 flex items-center justify-between border-b p-6">
+        <div className="border-base-300 flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
               <Building className="text-primary h-5 w-5" />
@@ -163,7 +181,7 @@ export const SettingsModal = () => {
         </div>
 
         {/* Tabs */}
-        <div className="border-base-300 border-b px-6">
+        <div className="border-base-300 bg-base-200 border-b px-6">
           <div role="tablist" className="tabs tabs-bordered">
             {TABS.map(tab => {
               const Icon = tab.icon
@@ -195,7 +213,7 @@ export const SettingsModal = () => {
             </div>
 
             {/* Footer Actions */}
-            <div className="border-base-300 flex justify-end gap-3 border-t p-6">
+            <div className="border-base-300 flex justify-end gap-3 border-t px-6 py-4">
               <button type="button" onClick={handleClose} className="btn btn-ghost">
                 Annuler
               </button>

@@ -398,7 +398,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                       >
                         Total HT
                       </th>
-                      <th/>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>

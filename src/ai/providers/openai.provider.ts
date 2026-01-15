@@ -1,6 +1,5 @@
 import type { AIProvider, ProviderMetadata } from './provider.type.ts'
 import type { AIDocumentData, AIMessage, AIResponse, AIServiceConfig } from '../ai.types'
-import type { Product } from '../../features/settings/settings.types'
 
 export class OpenAIProvider implements AIProvider {
   private apiKey: string | null = null
@@ -27,7 +26,6 @@ export class OpenAIProvider implements AIProvider {
   async generateDocument(
     conversationHistory: AIMessage[],
     systemPrompt: string,
-    products?: Product[],
     config?: Partial<AIServiceConfig>,
   ): Promise<AIResponse> {
     if (!this.isConfigured()) {
@@ -38,9 +36,8 @@ export class OpenAIProvider implements AIProvider {
     }
 
     try {
-      const productsText = this.formatProducts(products)
       const messages: AIMessage[] = [
-        { role: 'system', content: systemPrompt + productsText },
+        { role: 'system', content: systemPrompt },
         ...conversationHistory,
       ]
 
@@ -123,16 +120,6 @@ export class OpenAIProvider implements AIProvider {
         error: error instanceof Error ? error.message : 'Erreur inconnue',
       }
     }
-  }
-
-  private formatProducts(products?: Product[]): string {
-    if (!products?.length) return '\n\nAucun produit défini.'
-    return (
-      '\n\nProduits disponibles:\n' +
-      products
-        .map(p => `- ${p.title} (${p.price}€)${p.description ? ': ' + p.description : ''}`)
-        .join('\n')
-    )
   }
 
   private parseResponse(content: string): AIResponse {

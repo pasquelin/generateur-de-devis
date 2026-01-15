@@ -59,12 +59,12 @@ class TextToSpeechService implements TTSService {
     ]
 
     for (const priority of priorities) {
-      const voice = voices.find((v) => v.name.includes(priority) || v.lang.startsWith('fr'))
+      const voice = voices.find(v => v.name.includes(priority) || v.lang.startsWith('fr'))
       if (voice) return voice
     }
 
     // Fallback: première voix française trouvée
-    return voices.find((v) => v.lang.startsWith('fr')) || null
+    return voices.find(v => v.lang.startsWith('fr')) || null
   }
 
   /**
@@ -93,7 +93,7 @@ class TextToSpeechService implements TTSService {
       // Sélection de la voix
       if (options.voice) {
         const voices = this.getVoices()
-        const selectedVoice = voices.find((v) => v.name === options.voice)
+        const selectedVoice = voices.find(v => v.name === options.voice)
         if (selectedVoice) {
           utterance.voice = selectedVoice
         }
@@ -113,7 +113,7 @@ class TextToSpeechService implements TTSService {
         resolve()
       }
 
-      utterance.onerror = (event) => {
+      utterance.onerror = event => {
         reject(new Error(`Erreur TTS: ${event.error}`))
       }
 

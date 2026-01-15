@@ -12,7 +12,6 @@ export const usePdfExport = (data: DocumentData) => {
   const exportPdf = useCallback(
     async (filename?: string) => {
       try {
-        // Si pas de filename fourni, utiliser le documentNumber
         const finalFilename = filename || `${documentNumber}.pdf`
 
         const blob = await pdf(<DocumentPdf data={data} />).toBlob()
