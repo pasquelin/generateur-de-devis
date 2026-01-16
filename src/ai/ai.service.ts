@@ -1,7 +1,7 @@
 import type { AIMessage, AIResponse, AIServiceConfig } from './ai.types'
-import type { Product, ApiInfo } from '../features/settings/settings.types'
+import type { Product, PredefinedDiscount, ApiInfo } from '../features/settings/settings.types'
 import type { AIProvider } from './providers/provider.type.ts'
-import { ProviderRegistry } from './registry/provider.registry'
+import { RegistryProvider } from './providers/registry.provider.ts'
 import { SYSTEM_PROMPT } from '../prompts/system.prompt'
 import { useSettingsStore } from '../features/settings/settings.store'
 
@@ -10,12 +10,12 @@ import { useSettingsStore } from '../features/settings/settings.store'
  * Gère la sélection du provider et délègue les opérations
  */
 class AIService {
-  private readonly registry: ProviderRegistry
+  private readonly registry: RegistryProvider
   private currentProvider: AIProvider | null = null
   private currentProviderId: string = 'openai' // Provider par défaut
 
   constructor() {
-    this.registry = new ProviderRegistry()
+    this.registry = new RegistryProvider()
     // Charge le provider par défaut
     this.setProvider(this.currentProviderId)
   }
@@ -121,7 +121,9 @@ class AIService {
         SYSTEM_PROMPT.replace(
           '{{businessExplanation}}',
           settings.company.businessExplanation || 'aucune information sur le métier',
-        ).replace('{{products}}', this.formatProducts(settings.products.items)),
+        )
+          .replace('{{products}}', this.formatProducts(settings.products.items))
+          .replace('{{discounts}}', this.formatDiscounts(settings.discounts.items)),
         config,
       )
     } catch (error) {
@@ -138,6 +140,19 @@ class AIService {
       '\n\nProduits disponibles:\n' +
       products
         .map(p => `- ${p.title} (${p.price}€)${p.description ? ': ' + p.description : ''}`)
+        .join('\n')
+    )
+  }
+
+  private formatDiscounts(discounts?: PredefinedDiscount[]): string {
+    if (!discounts?.length) return '\n\nAucune remise prédéfinie.'
+    return (
+      "\n\nRemises prédéfinies disponibles (tu peux les suggérer à l'utilisateur):\n" +
+      discounts
+        .map(d => {
+          const symbol = d.type === 'percentage' ? '%' : '€'
+          return `- ${d.label}: ${d.value}${symbol}`
+        })
         .join('\n')
     )
   }

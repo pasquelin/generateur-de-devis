@@ -160,24 +160,31 @@ export const DocumentPdf = ({ data }: DocumentPdfProps) => {
           minHeight: 30,
         },
         tableColDescription: {
-          width: '45%',
+          width: '35%',
           fontSize: 9,
           color: colors.text,
         },
         tableColQuantity: {
-          width: '15%',
+          width: '10%',
           fontSize: 9,
           textAlign: 'center',
           color: colors.text,
         },
         tableColPrice: {
-          width: '20%',
+          width: '15%',
           fontSize: 9,
           textAlign: 'right',
           color: colors.text,
         },
+        tableColDiscount: {
+          width: '15%',
+          fontSize: 9,
+          textAlign: 'center',
+          color: '#dc2626',
+          fontWeight: '600',
+        },
         tableColTotal: {
-          width: '20%',
+          width: '15%',
           fontSize: 9,
           textAlign: 'right',
           fontWeight: 'bold',
@@ -367,20 +374,34 @@ export const DocumentPdf = ({ data }: DocumentPdfProps) => {
                 <Text style={[dynamicStyles.tableColPrice, dynamicStyles.tableHeaderText]}>
                   Prix unit. HT
                 </Text>
+                <Text style={[dynamicStyles.tableColDiscount, dynamicStyles.tableHeaderText]}>
+                  Remise
+                </Text>
                 <Text style={[dynamicStyles.tableColTotal, dynamicStyles.tableHeaderText]}>
                   Total HT
                 </Text>
               </View>
 
               {/* Table Rows */}
-              {linesSection.data.map(line => (
-                <View key={line.id} style={dynamicStyles.tableRow}>
-                  <Text style={dynamicStyles.tableColDescription}>{line.description}</Text>
-                  <Text style={dynamicStyles.tableColQuantity}>{line.quantity}</Text>
-                  <Text style={dynamicStyles.tableColPrice}>{line.unitPrice.toFixed(2)} €</Text>
-                  <Text style={dynamicStyles.tableColTotal}>{line.total.toFixed(2)} €</Text>
-                </View>
-              ))}
+              {linesSection.data.map(line => {
+                const formatDiscount = (discount: typeof line.discount) => {
+                  if (!discount) return '—'
+                  const symbol = discount.type === 'percentage' ? '%' : '€'
+                  return `-${discount.value}${symbol}`
+                }
+
+                return (
+                  <View key={line.id} style={dynamicStyles.tableRow}>
+                    <Text style={dynamicStyles.tableColDescription}>{line.description}</Text>
+                    <Text style={dynamicStyles.tableColQuantity}>{line.quantity}</Text>
+                    <Text style={dynamicStyles.tableColPrice}>{line.unitPrice.toFixed(2)} €</Text>
+                    <Text style={dynamicStyles.tableColDiscount}>
+                      {formatDiscount(line.discount)}
+                    </Text>
+                    <Text style={dynamicStyles.tableColTotal}>{line.total.toFixed(2)} €</Text>
+                  </View>
+                )
+              })}
             </View>
           </View>
         )}
@@ -389,11 +410,31 @@ export const DocumentPdf = ({ data }: DocumentPdfProps) => {
         {totalsSection && (
           <View style={dynamicStyles.totalsSection}>
             <View style={dynamicStyles.totalRow}>
-              <Text style={dynamicStyles.totalLabel}>Total HT</Text>
+              <Text style={dynamicStyles.totalLabel}>Sous-total HT</Text>
               <Text style={dynamicStyles.totalValue}>
                 {totalsSection.data.subtotal.toFixed(2)} €
               </Text>
             </View>
+
+            {totalsSection.data.globalDiscountAmount > 0 && (
+              <>
+                <View style={dynamicStyles.totalRow}>
+                  <Text style={[dynamicStyles.totalLabel, { color: '#dc2626', fontWeight: '600' }]}>
+                    Remise globale{' '}
+                    {data.globalDiscount?.label ? `(${data.globalDiscount.label})` : ''}
+                  </Text>
+                  <Text style={[dynamicStyles.totalValue, { color: '#dc2626', fontWeight: '600' }]}>
+                    -{totalsSection.data.globalDiscountAmount.toFixed(2)} €
+                  </Text>
+                </View>
+                <View style={dynamicStyles.totalRow}>
+                  <Text style={dynamicStyles.totalLabel}>Total HT</Text>
+                  <Text style={dynamicStyles.totalValue}>
+                    {totalsSection.data.totalAfterDiscount.toFixed(2)} €
+                  </Text>
+                </View>
+              </>
+            )}
 
             {totalsSection.data.vatNotApplicable ? (
               <View style={dynamicStyles.totalRow}>

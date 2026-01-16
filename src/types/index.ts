@@ -7,6 +7,14 @@ export interface Message {
   timestamp: Date
 }
 
+export type DiscountType = 'percentage' | 'fixed'
+
+export interface Discount {
+  type: DiscountType
+  value: number
+  label?: string
+}
+
 export interface DocumentData {
   title: string
   client: {
@@ -17,6 +25,7 @@ export interface DocumentData {
   lines: DocumentLine[]
   total: number
   notes?: string
+  globalDiscount?: Discount
 }
 
 export interface DocumentLine {
@@ -24,11 +33,8 @@ export interface DocumentLine {
   description: string
   quantity: number
   unitPrice: number
+  discount?: Discount
+  subtotal: number
+  discountAmount: number
   total: number
-}
-
-export interface Settings {
-  apiKey: string
-  language: string
-  tone: string
 }

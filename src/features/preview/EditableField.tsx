@@ -1,11 +1,18 @@
-import { type ChangeEvent, type CSSProperties, useEffect, useRef, useState } from 'react'
+import {
+  type ChangeEvent,
+  type CSSProperties,
+  type KeyboardEvent,
+  type MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 interface EditableFieldProps {
   value: string | number
   onChange: (value: string | number) => void
   style?: CSSProperties
   type?: 'text' | 'number'
-  className?: string
   placeholder?: string
   multiline?: boolean
 }
@@ -42,8 +49,8 @@ export const EditableField = ({
 
     // Convertir en nombre si nécessaire
     if (type === 'number') {
-      const numValue = parseFloat(editValue)
-      if (!isNaN(numValue)) {
+      const numValue = Number.parseFloat(editValue)
+      if (!Number.isNaN(numValue)) {
         onChange(numValue)
       }
     } else {
@@ -51,7 +58,7 @@ export const EditableField = ({
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && !multiline) {
       e.preventDefault()
       handleBlur()
@@ -62,7 +69,7 @@ export const EditableField = ({
     }
   }
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: MouseEvent) => {
     // Ne pas permettre l'édition si on clique pendant la génération PDF
     if (!isEditing) {
       e.stopPropagation()

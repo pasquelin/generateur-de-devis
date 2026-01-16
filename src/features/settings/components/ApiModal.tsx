@@ -1,4 +1,4 @@
-import { FormProvider, useForm, useWatch } from 'react-hook-form'
+import { FormProvider, useForm } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Key, X } from 'lucide-react'
@@ -7,9 +7,9 @@ import { type SettingsFormData, settingsSchema } from '../settings.schema'
 import { useSettingsStore } from '../settings.store'
 import { useApiModal } from '../hooks/useApiModal'
 import { ApiTab } from './ApiTab'
-import { validateApiKey } from '../utils/apiValidation'
-import type { ApiInfo } from '../settings.types'
 import { useEffect } from 'react'
+import { useApiFormValidation } from '../hooks/useApiFormValidation.ts'
+import { cleanApiData } from '../utils/cleanApiData.ts'
 
 export const ApiModal = () => {
   const { isModalOpen, closeModal } = useApiModal()
@@ -30,73 +30,12 @@ export const ApiModal = () => {
     control,
   } = methods
 
-  // Watch pour validation réactive du tab API
-  const apiProvider = useWatch({
-    control,
-    name: 'api.provider',
-  })
-  const apiOpenaiKey = useWatch({
-    control,
-    name: 'api.openaiKey',
-  })
-  const apiClaudeKey = useWatch({
-    control,
-    name: 'api.claudeKey',
-  })
-  const apiGeminiKey = useWatch({
-    control,
-    name: 'api.geminiKey',
-  })
-  const apiMistralKey = useWatch({
-    control,
-    name: 'api.mistralKey',
-  })
-  const apiGroqKey = useWatch({
-    control,
-    name: 'api.groqKey',
-  })
-
-  const hasApiErrors = (): boolean => {
-    const provider = apiProvider || 'openai'
-    return validateApiKey(
-      provider,
-      apiOpenaiKey,
-      apiClaudeKey,
-      apiGeminiKey,
-      apiMistralKey,
-      apiGroqKey,
-    )
-  }
+  const { hasApiErrors } = useApiFormValidation(control)
 
   const onSubmit = async (data: SettingsFormData) => {
     try {
-      // Nettoyage des clés : on ne garde que celle du provider actif
-      const cleanedApiData: Partial<ApiInfo> = {
-        provider: data.api.provider,
-      }
-
-      // Ne sauvegarder que la clé du provider sélectionné
-      const provider = data.api.provider || 'openai'
-      const keyField = `${provider}Key` as keyof ApiInfo
-
-      if (data.api[keyField]) {
-        cleanedApiData[keyField] = data.api[keyField]
-      }
-
-      // Garder les clés existantes des autres providers (ne pas les écraser)
-      const currentApiSettings = settings.api
-      const providers = ['openai', 'claude', 'gemini', 'mistral', 'groq']
-
-      providers.forEach(p => {
-        const key = `${p}Key` as keyof ApiInfo
-        if (p !== provider && currentApiSettings[key]) {
-          cleanedApiData[key] = currentApiSettings[key]
-        }
-      })
-
-      // Mettre à jour l'API avec les données nettoyées
-      updateApi(cleanedApiData as ApiInfo)
-
+      const cleanedApi = cleanApiData(data.api, settings.api)
+      updateApi(cleanedApi)
       closeModal()
     } catch (error) {
       console.error('Error saving settings:', error)
@@ -157,7 +96,12 @@ export const ApiModal = () => {
       </div>
 
       {/* Backdrop */}
-      <div className="modal-backdrop" onClick={handleClose} />
+      <button
+        type="button"
+        className="modal-backdrop"
+        onClick={handleClose}
+        aria-label="Fermer la modale"
+      />
     </div>
   )
 }

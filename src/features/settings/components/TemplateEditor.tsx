@@ -43,7 +43,7 @@ export const TemplateEditor = () => {
   }
 
   return (
-    <Panel className="h-full overflow-y-auto">
+    <Panel className="scrollbar-hide h-full overflow-y-auto">
       <div className="space-y-1">
         <h2 className="text-lg font-bold text-white">Éditeur de template</h2>
         <p className="text-sm text-gray-400">Modifiez les paramètres</p>

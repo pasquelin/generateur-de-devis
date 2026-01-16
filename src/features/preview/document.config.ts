@@ -24,6 +24,8 @@ export type LinesSectionData = DocumentData['lines']
 
 export interface TotalsSectionData {
   subtotal: number
+  globalDiscountAmount: number
+  totalAfterDiscount: number
   vatNotApplicable: boolean
   vatRate: string
   vatAmount: number
@@ -76,6 +78,8 @@ export type DocumentSection = {
 
 export interface DocumentCalculations {
   subtotal: number
+  globalDiscountAmount: number
+  totalAfterDiscount: number
   vatRate: number
   vatAmount: number
   totalTTC: number
@@ -100,21 +104,39 @@ export const useDocumentConfig = (
   documentNumber: string,
 ) => {
   // Calculate totals
-  const calculations: DocumentCalculations = {
-    subtotal: data.lines.reduce((sum, line) => sum + line.total, 0),
-    vatRate: settings.terms.vatNotApplicable
-      ? 0
-      : Number.parseFloat(settings.terms.defaultVatRate) / 100,
-    vatAmount: 0,
-    totalTTC: 0,
-    depositAmount: 0,
+  const subtotal = data.lines.reduce((sum, line) => sum + line.total, 0)
+
+  // Calculate global discount amount
+  let globalDiscountAmount = 0
+  if (data.globalDiscount) {
+    if (data.globalDiscount.type === 'percentage') {
+      globalDiscountAmount = (subtotal * data.globalDiscount.value) / 100
+    } else {
+      globalDiscountAmount = data.globalDiscount.value
+    }
   }
 
-  calculations.vatAmount = calculations.subtotal * calculations.vatRate
-  calculations.totalTTC = calculations.subtotal + calculations.vatAmount
-  calculations.depositAmount = settings.terms.depositRequired
-    ? (calculations.totalTTC * settings.terms.depositPercentage) / 100
+  const totalAfterDiscount = subtotal - globalDiscountAmount
+
+  const vatRate = settings.terms.vatNotApplicable
+    ? 0
+    : Number.parseFloat(settings.terms.defaultVatRate) / 100
+
+  const vatAmount = totalAfterDiscount * vatRate
+  const totalTTC = totalAfterDiscount + vatAmount
+  const depositAmount = settings.terms.depositRequired
+    ? (totalTTC * settings.terms.depositPercentage) / 100
     : 0
+
+  const calculations: DocumentCalculations = {
+    subtotal,
+    globalDiscountAmount,
+    totalAfterDiscount,
+    vatRate,
+    vatAmount,
+    totalTTC,
+    depositAmount,
+  }
 
   // Generate metadata
   const now = new Date()
@@ -190,6 +212,8 @@ export const useDocumentConfig = (
       visible: true,
       data: {
         subtotal: calculations.subtotal,
+        globalDiscountAmount: calculations.globalDiscountAmount,
+        totalAfterDiscount: calculations.totalAfterDiscount,
         vatNotApplicable: settings.terms.vatNotApplicable,
         vatRate: settings.terms.defaultVatRate,
         vatAmount: calculations.vatAmount,

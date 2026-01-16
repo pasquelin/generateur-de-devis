@@ -6,6 +6,16 @@
 [data-theme='dark'] {
   --color-primary: #014e70;
   --color-primary-content: #ffffff;
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+  --btn-shadow: 0;
+  --btn-border: 0;
 }
 
 input,
@@ -13,4 +23,13 @@ textarea,
 select,
 button {
   outline: none !important;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

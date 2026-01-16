@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react'
-import { Share2 } from 'lucide-react'
+import { Share2, X } from 'lucide-react'
 import {
   FacebookIcon,
   FacebookShareButton,
@@ -7,8 +7,6 @@ import {
   LinkedinShareButton,
   TwitterIcon,
   TwitterShareButton,
-  WhatsappIcon,
-  WhatsappShareButton,
 } from 'react-share'
 import { cn } from '../utils/cn.ts'
 
@@ -61,65 +59,57 @@ export const ShareButton: FC<ShareButtonProps> = ({
   }
 
   return (
-    <div className={cn('flex items-center gap-3', className)}>
-      <div className="transition-transform duration-200 hover:scale-110">
-        <FacebookShareButton
-          url={url}
-          title={title}
-          onClick={onShareSuccess}
-          className="btn btn-circle"
-        >
-          <FacebookIcon size={iconSize} round />
-        </FacebookShareButton>
+    <div className={cn('fab fab-flower absolute right-4 bottom-3', className)}>
+      {/* a focusable div with tabIndex is necessary to work on all browsers. role="button" is necessary for accessibility */}
+      <div tabIndex={0} role="button" className="btn btn-circle btn-info">
+        <Share2 size={18} />
       </div>
 
-      <div className="transition-transform duration-200 hover:scale-110">
-        <TwitterShareButton
-          url={url}
-          title={title}
-          onClick={onShareSuccess}
-          className="btn btn-circle"
-        >
-          <TwitterIcon size={iconSize} round />
-        </TwitterShareButton>
+      {/* close button should not be focusable so it can close the FAB when clicked. It's just a visual placeholder */}
+      <div className="fab-close">
+        <span className="btn btn-circle btn-lg btn-error">
+          <X size={22} />
+        </span>
       </div>
 
-      <div className="transition-transform duration-200 hover:scale-110">
-        <LinkedinShareButton
-          url={url}
-          title={title}
-          summary={description}
-          onClick={onShareSuccess}
-          className="btn btn-circle"
-        >
-          <LinkedinIcon size={iconSize} round />
-        </LinkedinShareButton>
-      </div>
+      <FacebookShareButton
+        url={url}
+        title={title}
+        onClick={onShareSuccess}
+        className="btn btn-circle"
+      >
+        <FacebookIcon size={iconSize} round />
+      </FacebookShareButton>
 
-      <div className="transition-transform duration-200 hover:scale-110">
-        <WhatsappShareButton
-          url={url}
-          title={title}
-          separator=" - "
-          onClick={onShareSuccess}
-          className="btn btn-circle"
-        >
-          <WhatsappIcon size={iconSize} round />
-        </WhatsappShareButton>
-      </div>
+      <TwitterShareButton
+        url={url}
+        title={title}
+        onClick={onShareSuccess}
+        className="btn btn-circle"
+      >
+        <TwitterIcon size={iconSize} round />
+      </TwitterShareButton>
+
+      <LinkedinShareButton
+        url={url}
+        title={title}
+        summary={description}
+        onClick={onShareSuccess}
+        className="btn btn-circle"
+      >
+        <LinkedinIcon size={iconSize} round />
+      </LinkedinShareButton>
 
       {/* Bouton natif de partage */}
       {typeof navigator !== 'undefined' && 'share' in navigator && (
-        <div className="transition-transform duration-200 hover:scale-110">
-          <button
-            onClick={handleNativeShare}
-            disabled={isSharing}
-            className={cn('btn btn-circle btn-accent', className)}
-            aria-label="Autres"
-          >
-            <Share2 size={22} />
-          </button>
-        </div>
+        <button
+          onClick={handleNativeShare}
+          disabled={isSharing}
+          className={cn('btn btn-circle btn-accent', className)}
+          aria-label="Autres"
+        >
+          <Share2 size={22} />
+        </button>
       )}
     </div>
   )

@@ -6,6 +6,7 @@ import type {
   BankingInfo,
   CompanyInfo,
   CompanySettings,
+  DiscountsInfo,
   InsuranceInfo,
   ProductsInfo,
   TemplateInfo,
@@ -28,6 +29,7 @@ interface SettingsStore {
   updateTerms: (terms: Partial<TermsInfo>) => void
   updateApi: (api: Partial<ApiInfo>) => void
   updateProducts: (products: Partial<ProductsInfo>) => void
+  updateDiscounts: (discounts: Partial<DiscountsInfo>) => void
   updateTemplate: (template: Partial<TemplateInfo>) => void
   resetSettings: () => void
 
@@ -65,6 +67,9 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   products: {
     items: [],
   },
+  discounts: {
+    items: [],
+  },
   template: {
     activeTemplate: 'default',
     templates: {
@@ -86,15 +91,20 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   },
 }
 
-const migrateSettings = (savedSettings: any): CompanySettings => {
+const migrateSettings = (savedSettings: CompanySettings): CompanySettings => {
+  const migrated = { ...savedSettings }
+
   // Ensure template structure exists for older data
-  if (!savedSettings.template) {
-    return {
-      ...savedSettings,
-      template: DEFAULT_SETTINGS.template,
-    }
+  if (!migrated.template) {
+    migrated.template = DEFAULT_SETTINGS.template
   }
-  return savedSettings
+
+  // Ensure discounts structure exists for older data
+  if (!migrated.discounts) {
+    migrated.discounts = DEFAULT_SETTINGS.discounts
+  }
+
+  return migrated
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -167,6 +177,14 @@ export const useSettingsStore = create<SettingsStore>()(
           },
         })),
 
+      updateDiscounts: discounts =>
+        set(state => ({
+          settings: {
+            ...state.settings,
+            discounts: { ...state.settings.discounts, ...discounts },
+          },
+        })),
+
       updateTemplate: template =>
         set(state => ({
           settings: {
@@ -186,7 +204,7 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: 'company-settings-storage',
       partialize: state => ({ settings: state.settings }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => state => {
         if (state) {
           state.settings = migrateSettings(state.settings)
         }

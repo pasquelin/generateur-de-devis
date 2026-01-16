@@ -59,6 +59,17 @@ export interface ProductsInfo {
   items: Product[]
 }
 
+export interface PredefinedDiscount {
+  id: string
+  label: string
+  type: 'percentage' | 'fixed'
+  value: number
+}
+
+export interface DiscountsInfo {
+  items: PredefinedDiscount[]
+}
+
 export interface TemplateStyle {
   primaryColor: string
   textColor: string
@@ -88,5 +99,6 @@ export interface CompanySettings {
   terms: TermsInfo
   api: ApiInfo
   products: ProductsInfo
+  discounts: DiscountsInfo
   template: TemplateInfo
 }

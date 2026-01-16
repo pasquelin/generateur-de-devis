@@ -1,21 +1,32 @@
 import type { ComponentType } from 'react'
 import { useEffect } from 'react'
-import { FormProvider, useForm, useWatch } from 'react-hook-form'
+import { FormProvider, useForm } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Building, CreditCard, FileText, Key, Package, Shield, Briefcase, X } from 'lucide-react'
+import {
+  Building,
+  CreditCard,
+  FileText,
+  Key,
+  Package,
+  Percent,
+  Shield,
+  Briefcase,
+  X,
+} from 'lucide-react'
 
 import { type SettingsFormData, settingsSchema } from '../settings.schema'
 import { useSettingsStore } from '../settings.store'
 import { ApiTab } from './ApiTab'
 import { BankingTab } from './BankingTab'
 import { CompanyTab } from './CompanyTab'
+import { DiscountsTab } from './DiscountsTab'
 import { InsuranceTab } from './InsuranceTab'
 import { ProductsTab } from './ProductsTab'
 import { TermsTab } from './TermsTab'
 import { BusinessExplanationTab } from './BusinessExplanationTab'
-import { validateApiKey } from '../utils/apiValidation'
-import type { ApiInfo } from '../settings.types.ts'
+import { useApiFormValidation } from '../hooks/useApiFormValidation.ts'
+import { cleanApiData } from '../utils/cleanApiData.ts'
 
 interface TabConfig {
   id: number
@@ -31,7 +42,8 @@ const TABS: TabConfig[] = [
   { id: 3, label: 'Assurance', icon: Shield, component: InsuranceTab },
   { id: 4, label: 'Conditions', icon: FileText, component: TermsTab },
   { id: 5, label: 'Produits', icon: Package, component: ProductsTab },
-  { id: 6, label: 'Métier', icon: Briefcase, component: BusinessExplanationTab },
+  { id: 6, label: 'Remises', icon: Percent, component: DiscountsTab },
+  { id: 7, label: 'Métier', icon: Briefcase, component: BusinessExplanationTab },
 ]
 
 export const SettingsModal = () => {
@@ -51,69 +63,15 @@ export const SettingsModal = () => {
     control,
   } = methods
 
-  // Resynchroniser le formulaire quand les settings du store changent
-  useEffect(() => {
-    reset(settings)
-  }, [settings, reset])
-
-  // Watch pour validation réactive du tab API
-  const apiProvider = useWatch({
-    control,
-    name: 'api.provider',
-  })
-  const apiOpenaiKey = useWatch({
-    control,
-    name: 'api.openaiKey',
-  })
-  const apiClaudeKey = useWatch({
-    control,
-    name: 'api.claudeKey',
-  })
-  const apiGeminiKey = useWatch({
-    control,
-    name: 'api.geminiKey',
-  })
-  const apiMistralKey = useWatch({
-    control,
-    name: 'api.mistralKey',
-  })
-  const apiGroqKey = useWatch({
-    control,
-    name: 'api.groqKey',
-  })
+  const { hasApiErrors } = useApiFormValidation(control)
 
   const onSubmit = async (data: SettingsFormData) => {
     try {
-      // Nettoyage des clés : on ne garde que celle du provider actif
-      const cleanedApiData: Partial<ApiInfo> = {
-        provider: data.api.provider,
-      }
-
-      // Ne sauvegarder que la clé du provider sélectionné
-      const provider = data.api.provider || 'openai'
-      const keyField = `${provider}Key` as keyof ApiInfo
-
-      if (data.api[keyField]) {
-        cleanedApiData[keyField] = data.api[keyField]
-      }
-
-      // Garder les clés existantes des autres providers (ne pas les écraser)
-      const currentApiSettings = settings.api
-      const providers = ['openai', 'claude', 'gemini', 'mistral', 'groq']
-
-      providers.forEach(p => {
-        const key = `${p}Key` as keyof ApiInfo
-        if (p !== provider && currentApiSettings[key]) {
-          cleanedApiData[key] = currentApiSettings[key]
-        }
-      })
-
-      // Mettre à jour les settings avec les données nettoyées
+      const cleanedApi = cleanApiData(data.api, settings.api)
       updateSettings({
         ...data,
-        api: cleanedApiData as ApiInfo,
+        api: cleanedApi,
       })
-
       closeModal()
     } catch (error) {
       console.error('Error saving settings:', error)
@@ -123,19 +81,6 @@ export const SettingsModal = () => {
   const handleClose = () => {
     reset(settings)
     closeModal()
-  }
-
-  // Validation personnalisée pour le tab API (réactive)
-  const hasApiErrors = (): boolean => {
-    const provider = apiProvider || 'openai'
-    return validateApiKey(
-      provider,
-      apiOpenaiKey,
-      apiClaudeKey,
-      apiGeminiKey,
-      apiMistralKey,
-      apiGroqKey,
-    )
   }
 
   // Check if a tab has errors
@@ -161,6 +106,11 @@ export const SettingsModal = () => {
         return false
     }
   }
+
+  // Resynchroniser le formulaire quand les settings du store changent
+  useEffect(() => {
+    reset(settings)
+  }, [settings, reset])
 
   if (!isModalOpen) return null
 
@@ -229,7 +179,12 @@ export const SettingsModal = () => {
       </div>
 
       {/* Backdrop */}
-      <div className="modal-backdrop" onClick={handleClose} />
+      <button
+        type="button"
+        className="modal-backdrop"
+        onClick={handleClose}
+        aria-label="Fermer la modale"
+      />
     </div>
   )
 }

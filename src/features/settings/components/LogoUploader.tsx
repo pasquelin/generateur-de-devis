@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { type ChangeEvent, useRef, useState } from 'react'
 
 import { Image as ImageIcon, Upload, X } from 'lucide-react'
 
@@ -20,7 +20,7 @@ export const LogoUploader = ({ value, onChange, error }: LogoUploaderProps) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [uploadError, setUploadError] = useState<string | undefined>()
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -104,8 +104,7 @@ export const LogoUploader = ({ value, onChange, error }: LogoUploaderProps) => {
           >
             {isProcessing ? (
               <>
-                <span className="loading loading-spinner loading-xs" />
-                Traitement...
+                <span className="loading loading-spinner loading-xs" /> Traitement...
               </>
             ) : (
               <>

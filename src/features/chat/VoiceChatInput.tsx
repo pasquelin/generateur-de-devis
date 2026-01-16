@@ -1,15 +1,53 @@
 import { useCallback, useEffect } from 'react'
 
-import { Mic, MousePointerClick, Repeat, VolumeX } from 'lucide-react'
+import { Mic, VolumeX } from 'lucide-react'
 
 import { startAdvancedSpeechRecognition } from '../../services/speech-advanced.service'
 import { ttsService } from '../../services/textToSpeech.service'
 import { useVoiceChatStore } from '../../stores/voice-chat.store'
 import { useSettingsStore } from '../settings/settings.store'
 import { useApiModal } from '../settings/hooks/useApiModal.ts'
+import { VoiceChatInputModeButton } from './VoiceChatInputModeButton.tsx'
+import { VoiceChatInputStateDisplay, type VoiceState } from './VoiceChatInputStateDisplay.tsx'
 
 interface VoiceChatInputProps {
   onSendMessage: (message: string) => Promise<string | undefined>
+}
+
+/**
+ * Retourne les classes CSS du bouton micro selon l'état
+ */
+const getButtonClasses = (state: VoiceState, isDisabled: boolean): string => {
+  const baseClasses =
+    'relative z-10 flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300'
+
+  if (isDisabled) {
+    return `${baseClasses} bg-neutral/50 text-neutral-content/50 cursor-not-allowed`
+  }
+
+  const stateClasses: Record<VoiceState, string> = {
+    idle: 'bg-neutral hover:bg-muted/80 text-neutral-content cursor-pointer',
+    listening: 'bg-primary text-primary-content',
+    processing: 'bg-error text-error-content',
+    speaking: 'bg-secondary text-secondary-content',
+    error: 'bg-error text-error-content',
+  }
+
+  return `${baseClasses} ${stateClasses[state]} hover:scale-105 active:scale-95`
+}
+
+/**
+ * Retourne le texte d'état à afficher
+ */
+const getStateText = (state: VoiceState): string => {
+  const stateTexts: Record<VoiceState, string> = {
+    idle: 'Appuyez pour parler',
+    listening: 'Je vous écoute…',
+    processing: 'Analyse en cours…',
+    speaking: 'Réponse vocale',
+    error: '',
+  }
+  return stateTexts[state]
 }
 
 export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
@@ -35,7 +73,7 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
   /**
    * Démarre l'écoute de l'utilisateur
    */
-  const startListening = () => {
+  const startListening = useCallback(() => {
     // Empêcher le démarrage si disabled
     if (isDisabled) {
       console.warn('⚠️ Configuration API invalide')
@@ -69,98 +107,113 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
       onEnd: () => {
         console.log('🛑 Écoute arrêtée automatiquement')
 
-        // ⚠️ Si on n'est PAS en train de parler ou traiter
-        const { state, autoMode } = useVoiceChatStore.getState()
+        // Si on n'est PAS en train de parler ou traiter
+        const { state: currentState, autoMode: currentAutoMode } = useVoiceChatStore.getState()
 
-        if (state === 'listening') {
-          if (autoMode) {
-            // Optionnel : relancer automatiquement
+        if (currentState === 'listening') {
+          if (currentAutoMode) {
+            // Optionnel: relancer automatiquement
             startListening()
           } else {
-            setState('idle') // 👈 bouton revient à l'état normal
+            setState('idle')
           }
         }
       },
     })
 
     setRecognitionService(stopRecognition)
-  }
-
-  /**
-   * Traite l'input utilisateur en utilisant le système du ChatPanel
-   */
-  const processUserInput = async (userInput: string) => {
-    setState('processing')
-
-    // Vérifier la clé API
-    if (!settings.api.openaiKey) {
-      const errorMsg = 'Veuillez configurer votre clé API OpenAI dans les paramètres.'
-      setError(errorMsg)
-      await speakResponse(errorMsg)
-      return
-    }
-
-    try {
-      // Utiliser le système de ChatPanel via onSendMessage
-      // Cela gère automatiquement :
-      // - L'ajout du message utilisateur
-      // - L'appel à l'IA
-      // - La mise à jour du document
-      // - L'ajout du message de confirmation
-      const responseMessage = await onSendMessage(userInput)
-
-      // Si on a reçu une réponse, la lire
-      if (responseMessage) {
-        setResponse(responseMessage)
-        addToHistory('assistant', responseMessage)
-
-        // Extraire uniquement le responseAudio (première ligne avant les stats)
-        const audioText = responseMessage.split('\n\n')[0]
-
-        // Lire le texte audio
-        await speakResponse(audioText)
-      }
-    } catch (err) {
-      console.error('❌ Erreur traitement:', err)
-      const errorMsg = "Une erreur s'est produite lors du traitement."
-      setError(errorMsg)
-      await speakResponse(errorMsg)
-    }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDisabled, setState, setTranscript, setError, addToHistory, setRecognitionService])
 
   /**
    * Lit la réponse via synthèse vocale
    */
-  const speakResponse = async (text: string) => {
-    setState('speaking')
+  const speakResponse = useCallback(
+    async (text: string) => {
+      setState('speaking')
 
-    try {
-      // Configurer le callback de fin
-      ttsService.setOnEndCallback(() => {
-        console.log('🔊 Lecture terminée')
+      try {
+        // Configurer le callback de fin
+        ttsService.setOnEndCallback(() => {
+          console.log('🔊 Lecture terminée')
 
-        // En mode auto, relancer l'écoute
-        if (autoMode && !isDisabled) {
-          setTimeout(() => {
-            startListening()
-          }, 500)
-        } else {
-          setState('idle')
+          // En mode auto, relancer l'écoute
+          if (autoMode && !isDisabled) {
+            setTimeout(() => {
+              startListening()
+            }, 500)
+          } else {
+            setState('idle')
+          }
+        })
+
+        // Lancer la lecture
+        await ttsService.speak(text, {
+          rate: 1,
+          pitch: 1,
+          volume: 1,
+        })
+      } catch (err) {
+        console.error('❌ Erreur TTS:', err)
+        setError(err instanceof Error ? err.message : 'Erreur de synthèse vocale')
+        setState('error')
+      }
+    },
+    [autoMode, isDisabled, setState, setError, startListening],
+  )
+
+  /**
+   * Traite l'input utilisateur en utilisant le système du ChatPanel
+   */
+  const processUserInput = useCallback(
+    async (userInput: string) => {
+      setState('processing')
+
+      // Vérifier la clé API
+      if (!settings.api.openaiKey) {
+        const errorMsg = 'Veuillez configurer votre clé API OpenAI dans les paramètres.'
+        setError(errorMsg)
+        await speakResponse(errorMsg)
+        return
+      }
+
+      try {
+        // Utiliser le système de ChatPanel via onSendMessage
+        // Cela gère automatiquement:
+        // - L'ajout du message utilisateur
+        // - L'appel à l'IA
+        // - La mise à jour du document
+        // - L'ajout du message de confirmation
+        const responseMessage = await onSendMessage(userInput)
+
+        // Si on a reçu une réponse, la lire
+        if (responseMessage) {
+          setResponse(responseMessage)
+          addToHistory('assistant', responseMessage)
+
+          // Extraire uniquement le responseAudio (première ligne avant les stats)
+          const audioText = responseMessage.split('\n\n')[0]
+
+          // Lire le texte audio
+          await speakResponse(audioText)
         }
-      })
-
-      // Lancer la lecture
-      await ttsService.speak(text, {
-        rate: 1,
-        pitch: 1,
-        volume: 1,
-      })
-    } catch (err) {
-      console.error('❌ Erreur TTS:', err)
-      setError(err instanceof Error ? err.message : 'Erreur de synthèse vocale')
-      setState('error')
-    }
-  }
+      } catch (err) {
+        console.error('❌ Erreur traitement:', err)
+        const errorMsg = "Une erreur s'est produite lors du traitement."
+        setError(errorMsg)
+        await speakResponse(errorMsg)
+      }
+    },
+    [
+      settings.api.openaiKey,
+      onSendMessage,
+      setState,
+      setError,
+      setResponse,
+      addToHistory,
+      speakResponse,
+    ],
+  )
 
   /**
    * Arrête la conversation
@@ -211,93 +264,50 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
     }
   }, [isDisabled, state, stopConversation])
 
+  const handleButtonClick = state === 'idle' ? startListening : stopConversation
+  const buttonClasses = getButtonClasses(state, isDisabled)
+  const stateText = getStateText(state)
+  const showListeningAnimation = state === 'listening' && !isDisabled
+  const showSpeakingAnimation = state === 'speaking' && !isDisabled
+
   return (
     <div className="bg-neutral/20 rounded-box flex items-center gap-4 px-4 py-3">
       {/* Bouton micro */}
       <div className="relative flex shrink-0 items-center justify-center">
-        {state === 'listening' && !isDisabled && (
+        {showListeningAnimation && (
           <>
             <span className="bg-primary/20 absolute h-16 w-16 animate-ping rounded-full" />
             <span className="border-primary/40 absolute h-14 w-14 animate-pulse rounded-full border" />
           </>
         )}
 
-        {state === 'speaking' && !isDisabled && (
+        {showSpeakingAnimation && (
           <span className="border-secondary/40 absolute h-14 w-14 animate-pulse rounded-full border" />
         )}
 
-        <button
-          onClick={state === 'idle' ? startListening : stopConversation}
-          disabled={isDisabled}
-          className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 ${
-            isDisabled
-              ? 'bg-neutral/50 text-neutral-content/50 cursor-not-allowed'
-              : state === 'idle'
-                ? 'bg-neutral hover:bg-muted/80 text-neutral-content cursor-pointer'
-                : state === 'listening'
-                  ? 'bg-primary text-primary-content'
-                  : state === 'speaking'
-                    ? 'bg-secondary text-secondary-content'
-                    : 'bg-error text-error-content'
-          } ${!isDisabled && 'hover:scale-105 active:scale-95'}`}
-        >
+        <button onClick={handleButtonClick} disabled={isDisabled} className={buttonClasses}>
           {state === 'speaking' ? <VolumeX size={20} /> : <Mic size={20} />}
         </button>
       </div>
 
       {/* Texte central */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* État / erreur */}
-        {state === 'error' && error ? (
-          <span className="text-error truncate text-xs">{error}</span>
-        ) : isDisabled ? (
-          <div className="inline-flex items-center gap-2">
-            <div className="text-warning truncate text-xs">⚠️ Configuration API requise</div>
-            <button className="btn btn-xs btn-warning" onClick={openModal}>
-              Modifier
-            </button>
-          </div>
-        ) : (
-          <>
-            <span className="text-muted-foreground text-xs">
-              {state === 'idle' && 'Appuyez pour parler'}
-              {state === 'listening' && 'Je vous écoute…'}
-              {state === 'processing' && 'Analyse en cours…'}
-              {state === 'speaking' && 'Réponse vocale'}
-            </span>
-
-            {state === 'listening' && currentTranscript && (
-              <span className="text-primary/70 truncate text-xs italic">"{currentTranscript}"</span>
-            )}
-          </>
-        )}
+        <VoiceChatInputStateDisplay
+          state={state}
+          error={error}
+          isDisabled={isDisabled}
+          stateText={stateText}
+          currentTranscript={currentTranscript}
+          onOpenModal={openModal}
+        />
       </div>
 
       {/* Mode */}
-      <button
-        onClick={toggleAutoMode}
-        disabled={isDisabled}
-        className={`btn btn-sm ${autoMode ? 'btn-primary' : 'btn-secondary'} ${isDisabled && 'btn-disabled'}`}
-        title={
-          isDisabled
-            ? 'Configuration API requise'
-            : autoMode
-              ? 'Mode continu activé'
-              : 'Mode manuel'
-        }
-      >
-        {autoMode ? (
-          <>
-            <Repeat size={14} />
-            <span className="hidden sm:inline">Continu</span>
-          </>
-        ) : (
-          <>
-            <MousePointerClick size={14} />
-            <span className="hidden sm:inline">Manuel</span>
-          </>
-        )}
-      </button>
+      <VoiceChatInputModeButton
+        autoMode={autoMode}
+        isDisabled={isDisabled}
+        onToggle={toggleAutoMode}
+      />
     </div>
   )
 }

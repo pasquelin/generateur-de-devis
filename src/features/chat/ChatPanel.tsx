@@ -9,6 +9,8 @@ import { ChatInput } from './ChatInput'
 import { ChatMessage } from './ChatMessage'
 import { VoiceChatInput } from './VoiceChatInput'
 import { useChatStore } from './chat.store'
+import { ChatPanelEmpty } from './ChatPanelEmpty.tsx'
+import { useTemplateEditorAutoOpen } from '../../hooks/useTemplateEditorAutoOpen.ts'
 
 export const ChatPanel = () => {
   const { messages, addMessage } = useChatStore()
@@ -16,10 +18,7 @@ export const ChatPanel = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  // Scroll automatique
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  useTemplateEditorAutoOpen()
 
   const handleSendMessage = async (content: string): Promise<string | undefined> => {
     // Ajouter le message utilisateur
@@ -50,10 +49,14 @@ export const ChatPanel = () => {
             description: line.description,
             quantity: line.quantity,
             unitPrice: line.unitPrice,
-            total: line.quantity * line.unitPrice,
+            discount: line.discount,
+            subtotal: 0, // Calculé par le store
+            discountAmount: 0, // Calculé par le store
+            total: 0, // Calculé par le store
           })),
-          total: response.data.lines.reduce((sum, line) => sum + line.quantity * line.unitPrice, 0),
+          total: 0, // Calculé par le store
           notes: response.data.notes || '',
+          globalDiscount: response.data.globalDiscount,
         }
 
         // Mettre à jour le document
@@ -83,67 +86,19 @@ export const ChatPanel = () => {
     }
   }
 
+  // Scroll automatique
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
   return (
     <Panel className="h-full overflow-hidden">
       <div className="flex h-full flex-col gap-4">
         {/* Historique des messages */}
         <div className="relative grow overflow-y-auto">
-          <div className="absolute mb-4 w-full space-y-4">
+          <div className="absolute mb-4 h-full w-full space-y-4">
             {messages.length === 0 ? (
-              <div className="m-20 space-y-6 text-center">
-                {/* Intro */}
-                <p className="text-base-content/70 text-xl font-semibold">
-                  Expliquez simplement votre besoin dans la conversation
-                </p>
-
-                {/* Interaction modes */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {/* Text */}
-                  <div className="border-base-300 bg-base-100 rounded-xl border p-4">
-                    <div className="text-lg">⌨️</div>
-                    <h2 className="mt-1 text-xl font-semibold">Par écrit</h2>
-                    <p className="text-base-content/60 mt-1 text-sm">
-                      Écrivez votre demande comme dans une application de messagerie.
-                    </p>
-                  </div>
-
-                  {/* Audio */}
-                  <div className="border-base-300 bg-base-100 rounded-xl border p-4">
-                    <div className="text-lg">🎤</div>
-                    <h2 className="mt-1 text-xl font-semibold">Par audio</h2>
-                    <p className="text-base-content/60 mt-1 text-sm">
-                      Cliquez sur le micro et expliquez votre besoin à voix haute.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Audio modes */}
-                <div className="bg-base-200/60 rounded-xl p-5 text-left">
-                  <h4 className="mb-3 flex items-center gap-2 text-xl font-semibold">
-                    🎧 Modes audio disponibles
-                  </h4>
-
-                  <div className="text-base-content/70">
-                    <div className="font-medium">Mode manuel</div>
-                    <div className="text-sm italic">
-                      cliquez sur le micro à chaque nouvelle phrase.
-                    </div>
-                  </div>
-                  <div className="divider my-3"></div>
-                  <div className="text-base-content/70">
-                    <div className="font-medium">Mode continu</div>
-                    <div className="text-sm italic">
-                      discutez librement sans recliquer après chaque réponse.
-                    </div>
-                  </div>
-                </div>
-
-                {/* Security note */}
-                <p className="text-base-content/40 text-xs">
-                  🔒 Le micro se coupe automatiquement après quelques secondes de silence pour des
-                  raisons de sécurité.
-                </p>
-              </div>
+              <ChatPanelEmpty />
             ) : (
               messages.map(message => <ChatMessage key={message.id} message={message} />)
             )}

@@ -2,6 +2,7 @@ import type { DocumentData } from '../../../../types'
 import { useDocumentPdf } from '../../../../hooks/useDocumentPdf.tsx'
 import { useDocumentStore } from '../../document.store'
 import { EditableField } from '../../EditableField'
+import { EditableDiscount } from '../../EditableDiscount'
 import { useEffect, useRef, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { useSettingsStore } from '../../../settings/settings.store'
@@ -39,7 +40,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
     infoText: '#1e40af',
   }
 
-  const { updateClient, updateLine, deleteLine } = useDocumentStore()
+  const { updateClient, updateLine, deleteLine, updateLineDiscount } = useDocumentStore()
   const {
     headerSection,
     clientSection,
@@ -386,7 +387,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                           fontSize: '9px',
                           fontWeight: 'bold',
                           color: colors.text,
-                          width: '45%',
+                          width: '35%',
                         }}
                       >
                         Description
@@ -398,7 +399,7 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                           fontSize: '9px',
                           fontWeight: 'bold',
                           color: colors.text,
-                          width: '15%',
+                          width: '10%',
                         }}
                       >
                         Qté
@@ -410,10 +411,22 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                           fontSize: '9px',
                           fontWeight: 'bold',
                           color: colors.text,
-                          width: '20%',
+                          width: '15%',
                         }}
                       >
                         Prix unit. HT
+                      </th>
+                      <th
+                        style={{
+                          textAlign: 'center',
+                          padding: '8px',
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          color: colors.text,
+                          width: '15%',
+                        }}
+                      >
+                        Remise
                       </th>
                       <th
                         style={{
@@ -422,12 +435,12 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                           fontSize: '9px',
                           fontWeight: 'bold',
                           color: colors.text,
-                          width: '20%',
+                          width: '15%',
                         }}
                       >
                         Total HT
                       </th>
-                      <th />
+                      <th style={{ width: '10%' }} />
                     </tr>
                   </thead>
                   <tbody>
@@ -476,6 +489,20 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                         </td>
                         <td
                           style={{
+                            textAlign: 'center',
+                            padding: '8px',
+                            fontSize: '9px',
+                            color: colors.text,
+                          }}
+                        >
+                          <EditableDiscount
+                            value={line.discount}
+                            onChange={discount => updateLineDiscount(line.id, discount)}
+                            style={{ fontSize: '9px' }}
+                          />
+                        </td>
+                        <td
+                          style={{
                             textAlign: 'right',
                             padding: '8px',
                             fontSize: '9px',
@@ -512,11 +539,49 @@ export const DocumentPreview = ({ data }: DocumentPreviewProps) => {
                     marginBottom: '5px',
                   }}
                 >
-                  <span style={{ fontSize: '10px', color: colors.textSecondary }}>Total HT</span>
+                  <span style={{ fontSize: '10px', color: colors.textSecondary }}>
+                    Sous-total HT
+                  </span>
                   <span style={{ fontSize: '10px', fontWeight: 'bold', color: colors.text }}>
                     {totalsSection.data.subtotal.toFixed(2)} €
                   </span>
                 </div>
+
+                {totalsSection.data.globalDiscountAmount > 0 && (
+                  <>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '5px',
+                      }}
+                    >
+                      <span style={{ fontSize: '10px', color: '#dc2626', fontWeight: '600' }}>
+                        Remise globale{' '}
+                        {data.globalDiscount?.label ? `(${data.globalDiscount.label})` : ''}
+                      </span>
+                      <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#dc2626' }}>
+                        -{totalsSection.data.globalDiscountAmount.toFixed(2)} €
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '5px',
+                        paddingTop: '5px',
+                        borderTop: `1px solid ${colors.border}`,
+                      }}
+                    >
+                      <span style={{ fontSize: '10px', color: colors.textSecondary }}>
+                        Total HT
+                      </span>
+                      <span style={{ fontSize: '10px', fontWeight: 'bold', color: colors.text }}>
+                        {totalsSection.data.totalAfterDiscount.toFixed(2)} €
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 {totalsSection.data.vatNotApplicable ? (
                   <div

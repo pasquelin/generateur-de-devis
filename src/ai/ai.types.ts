@@ -2,6 +2,14 @@
  * Types pour le service IA
  */
 
+export type AIDiscountType = 'percentage' | 'fixed'
+
+export interface AIDiscount {
+  type: AIDiscountType
+  value: number
+  label?: string
+}
+
 export interface AIClientInfo {
   name: string
   address: string
@@ -12,6 +20,7 @@ export interface AIDocumentLine {
   description: string
   quantity: number
   unitPrice: number
+  discount?: AIDiscount
 }
 
 export interface AIDocumentData {
@@ -20,6 +29,7 @@ export interface AIDocumentData {
   lines: AIDocumentLine[]
   notes?: string
   responseAudio?: string
+  globalDiscount?: AIDiscount
 }
 
 export interface AIMessage {

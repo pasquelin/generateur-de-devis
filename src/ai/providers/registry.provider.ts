@@ -1,16 +1,16 @@
-import type { AIProvider } from '../providers/provider.type.ts'
-import { OpenAIProvider } from '../providers/openai.provider'
-import { ClaudeProvider } from '../providers/claude.provider'
-import { GeminiProvider } from '../providers/gemini.provider'
-import { MistralProvider } from '../providers/mistral.provider'
-import { GroqProvider } from '../providers/groq.provider'
+import type { AIProvider } from './provider.type.ts'
+import { OpenAIProvider } from './openai.provider.ts'
+import { ClaudeProvider } from './claude.provider.ts'
+import { GeminiProvider } from './gemini.provider.ts'
+import { MistralProvider } from './mistral.provider.ts'
+import { GroqProvider } from './groq.provider.ts'
 
 /**
  * Registry centralisé des providers IA
  * Gère l'enregistrement et la récupération des providers disponibles
  */
-export class ProviderRegistry {
-  private providers = new Map<string, AIProvider>()
+export class RegistryProvider {
+  private readonly providers = new Map<string, AIProvider>()
 
   constructor() {
     // Enregistrement des providers disponibles
@@ -52,14 +52,5 @@ export class ProviderRegistry {
    */
   getProvidersMetadata() {
     return this.listProviders().map(p => p.metadata)
-  }
-
-  /**
-   * Vérifie si un provider existe
-   * @param id - L'ID du provider à vérifier
-   * @returns true si le provider existe
-   */
-  hasProvider(id: string): boolean {
-    return this.providers.has(id)
   }
 }

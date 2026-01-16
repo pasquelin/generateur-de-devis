@@ -65,7 +65,7 @@ export const startAdvancedSpeechRecognition = (
 
   // Gestion des erreurs
   recognition.onerror = event => {
-    let errorMessage = event.error
+    let errorMessage
 
     switch (event.error) {
       case 'no-speech':
@@ -108,57 +108,4 @@ export const startAdvancedSpeechRecognition = (
       console.warn("Erreur lors de l'arrêt:", error)
     }
   }
-}
-
-// Types TypeScript
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition
-    webkitSpeechRecognition: typeof SpeechRecognition
-  }
-}
-
-interface SpeechRecognition extends EventTarget {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  maxAlternatives: number
-  start(): void
-  stop(): void
-  abort(): void
-  onstart: ((event: Event) => void) | null
-  onend: ((event: Event) => void) | null
-  onresult: (event: SpeechRecognitionEvent) => void
-  onerror: (event: SpeechRecognitionErrorEvent) => void
-}
-
-interface SpeechRecognitionEvent extends Event {
-  resultIndex: number
-  results: SpeechRecognitionResultList
-}
-
-interface SpeechRecognitionResultList {
-  [index: number]: SpeechRecognitionResult
-  length: number
-}
-
-interface SpeechRecognitionResult {
-  [index: number]: SpeechRecognitionAlternative
-  length: number
-  isFinal: boolean
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string
-  confidence: number
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  error: string
-  message: string
-}
-
-declare const SpeechRecognition: {
-  prototype: SpeechRecognition
-  new (): SpeechRecognition
 }
