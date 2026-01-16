@@ -1,6 +1,6 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Mic, VolumeX } from 'lucide-react'
+import { Mic, Volume, VolumeOff, VolumeX } from 'lucide-react'
 
 import { startAdvancedSpeechRecognition } from '../../services/speech-advanced.service'
 import { ttsService } from '../../services/textToSpeech.service'
@@ -66,6 +66,9 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
     reset,
   } = useVoiceChatStore()
 
+  const [sound, setSound] = useState(false)
+  const soundRef = useRef(sound)
+
   const { openModal } = useApiModal()
   const { settings, hasValidApiConfig } = useSettingsStore()
   const isDisabled = !hasValidApiConfig()
@@ -130,6 +133,9 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
    */
   const speakResponse = useCallback(
     async (text: string) => {
+      console.log('sound', sound)
+      if (!soundRef.current) return
+
       setState('speaking')
 
       try {
@@ -159,7 +165,7 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
         setState('error')
       }
     },
-    [autoMode, isDisabled, setState, setError, startListening],
+    [sound, setState, autoMode, isDisabled, startListening, setError],
   )
 
   /**
@@ -264,6 +270,11 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
     }
   }, [isDisabled, state, stopConversation])
 
+
+  useEffect(() => {
+    soundRef.current = sound
+  }, [sound])
+
   const handleButtonClick = state === 'idle' ? startListening : stopConversation
   const buttonClasses = getButtonClasses(state, isDisabled)
   const stateText = getStateText(state)
@@ -308,6 +319,18 @@ export const VoiceChatInput = ({ onSendMessage }: VoiceChatInputProps) => {
         isDisabled={isDisabled}
         onToggle={toggleAutoMode}
       />
+
+      <button
+        className="btn btn-square btn-accent btn-sm"
+        onClick={() => {
+          if (sound) {
+            ttsService.stop()
+          }
+          setSound(prev => !prev)
+        }}
+      >
+        {sound ? <VolumeOff size={18} /> : <Volume size={18} />}
+      </button>
     </div>
   )
 }

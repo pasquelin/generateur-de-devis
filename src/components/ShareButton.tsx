@@ -8,7 +8,7 @@ import {
   TwitterIcon,
   TwitterShareButton,
 } from 'react-share'
-import { cn } from '../utils/cn.ts'
+import { cn } from '../utils/cn.util.ts'
 
 export interface ShareButtonProps {
   /** URL à partager (défaut: URL actuelle) */
@@ -61,13 +61,13 @@ export const ShareButton: FC<ShareButtonProps> = ({
   return (
     <div className={cn('fab fab-flower absolute right-4 bottom-3', className)}>
       {/* a focusable div with tabIndex is necessary to work on all browsers. role="button" is necessary for accessibility */}
-      <div tabIndex={0} role="button" className="btn btn-circle btn-info">
+      <div tabIndex={0} role="button" className="btn btn-circle btn-primary">
         <Share2 size={18} />
       </div>
 
       {/* close button should not be focusable so it can close the FAB when clicked. It's just a visual placeholder */}
       <div className="fab-close">
-        <span className="btn btn-circle btn-lg btn-error">
+        <span className="btn btn-circle btn-error">
           <X size={22} />
         </span>
       </div>
@@ -76,7 +76,7 @@ export const ShareButton: FC<ShareButtonProps> = ({
         url={url}
         title={title}
         onClick={onShareSuccess}
-        className="btn btn-circle"
+        className="btn btn-circle shadow"
       >
         <FacebookIcon size={iconSize} round />
       </FacebookShareButton>
@@ -85,7 +85,7 @@ export const ShareButton: FC<ShareButtonProps> = ({
         url={url}
         title={title}
         onClick={onShareSuccess}
-        className="btn btn-circle"
+        className="btn btn-circle shadow"
       >
         <TwitterIcon size={iconSize} round />
       </TwitterShareButton>
@@ -95,7 +95,7 @@ export const ShareButton: FC<ShareButtonProps> = ({
         title={title}
         summary={description}
         onClick={onShareSuccess}
-        className="btn btn-circle"
+        className="btn btn-circle shadow"
       >
         <LinkedinIcon size={iconSize} round />
       </LinkedinShareButton>
@@ -105,7 +105,7 @@ export const ShareButton: FC<ShareButtonProps> = ({
         <button
           onClick={handleNativeShare}
           disabled={isSharing}
-          className={cn('btn btn-circle btn-accent', className)}
+          className="btn btn-circle btn-accent"
           aria-label="Autres"
         >
           <Share2 size={22} />

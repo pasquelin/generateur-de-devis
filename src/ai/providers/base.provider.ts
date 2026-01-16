@@ -175,6 +175,7 @@ export abstract class BaseAIProvider implements AIProvider {
       return {
         success: true,
         data: parsed,
+        rawResponse: content,
       }
     } catch {
       return {

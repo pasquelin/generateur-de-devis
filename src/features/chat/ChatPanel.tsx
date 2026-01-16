@@ -11,6 +11,7 @@ import { VoiceChatInput } from './VoiceChatInput'
 import { useChatStore } from './chat.store'
 import { ChatPanelEmpty } from './ChatPanelEmpty.tsx'
 import { useTemplateEditorAutoOpen } from '../../hooks/useTemplateEditorAutoOpen.ts'
+import ReactGA from 'react-ga4'
 
 export const ChatPanel = () => {
   const { messages, addMessage } = useChatStore()
@@ -21,6 +22,11 @@ export const ChatPanel = () => {
   useTemplateEditorAutoOpen()
 
   const handleSendMessage = async (content: string): Promise<string | undefined> => {
+    ReactGA.event({
+      category: 'Chat',
+      action: 'SendMessage',
+    })
+
     // Ajouter le message utilisateur
     addMessage(content, 'user')
 
@@ -29,12 +35,9 @@ export const ChatPanel = () => {
 
     try {
       // Construire l'historique de conversation pour l'IA
-      const conversationHistory: AIMessage[] = messages
-        .concat([{ id: Date.now().toString(), role: 'user', content, timestamp: new Date() }])
-        .map(msg => ({
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content,
-        }))
+      const conversationHistory: AIMessage[] = messages.concat([
+        { id: Date.now().toString(), role: 'user', content, timestamp: new Date() },
+      ])
 
       // Appeler l'IA
       const response = await aiService.generateDocument(conversationHistory)

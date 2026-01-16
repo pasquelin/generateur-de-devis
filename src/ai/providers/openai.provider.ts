@@ -10,8 +10,8 @@ export class OpenAIProvider extends BaseAIProvider {
     apiKeyLabel: 'Clé API OpenAI',
     apiKeyPlaceholder: 'sk-...',
     apiKeyUrl: 'https://platform.openai.com/api-keys',
-    defaultModel: 'gpt-4o-mini',
-    availableModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4'],
+    defaultModel: 'gpt-5.2',
+    availableModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-5.2'],
   }
 
   protected override buildGenerateRequest(
@@ -35,7 +35,6 @@ export class OpenAIProvider extends BaseAIProvider {
         body: JSON.stringify({
           model: config?.model || this.metadata.defaultModel,
           messages,
-          max_tokens: config?.maxTokens || 2000,
           temperature: config?.temperature ?? 0.3,
           response_format: { type: 'json_object' },
         }),

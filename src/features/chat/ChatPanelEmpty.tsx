@@ -16,7 +16,7 @@ export const ChatPanelEmpty = () => {
         {/* Interaction modes */}
         <div className="grid grid-cols-2 gap-2 sm:gap-4">
           {/* Text */}
-          <div className="border-base-300 bg-base-100 rounded-xl border p-2 sm:p-4">
+          <div className="border-base-300 bg-base-100 from-primary/5 rounded-xl border bg-linear-to-br p-2 shadow-lg sm:p-4">
             <div className="text-lg sm:text-2xl">⌨️</div>
             <h2 className="mt-0.5 text-base font-semibold sm:mt-1 sm:text-xl">Par écrit</h2>
             <p className="text-base-content/60 mt-0.5 text-xs sm:mt-1 sm:text-sm">
@@ -25,7 +25,7 @@ export const ChatPanelEmpty = () => {
           </div>
 
           {/* Audio */}
-          <div className="border-base-300 bg-base-100 rounded-xl border p-2 sm:p-4">
+          <div className="border-base-300 bg-base-100 from-primary/5 rounded-xl border bg-linear-to-br p-2 shadow-lg sm:p-4">
             <div className="text-lg sm:text-2xl">🎤</div>
             <h2 className="mt-0.5 text-base font-semibold sm:mt-1 sm:text-xl">Par audio</h2>
             <p className="text-base-content/60 mt-0.5 text-xs sm:mt-1 sm:text-sm">

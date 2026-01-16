@@ -1,10 +1,10 @@
 import { create } from 'zustand'
 
-import { type Message } from '../../types'
+import { type Message, type MessageRole } from '../../types'
 
 interface ChatStore {
   messages: Message[]
-  addMessage: (content: string, role: 'user' | 'assistant') => void
+  addMessage: (content: string, role: MessageRole) => void
   clearChat: () => void
 }
 

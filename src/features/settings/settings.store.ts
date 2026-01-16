@@ -12,16 +12,13 @@ import type {
   TemplateInfo,
   TermsInfo,
 } from './settings.types'
+import ReactGA from 'react-ga4'
 
 interface SettingsStore {
   settings: CompanySettings
   isModalOpen: boolean
   activeTab: number
-
-  // Getters
   hasValidApiConfig: () => boolean
-
-  // Actions
   updateSettings: (settings: CompanySettings) => void
   updateCompany: (company: Partial<CompanyInfo>) => void
   updateBanking: (banking: Partial<BankingInfo>) => void
@@ -32,8 +29,6 @@ interface SettingsStore {
   updateDiscounts: (discounts: Partial<DiscountsInfo>) => void
   updateTemplate: (template: Partial<TemplateInfo>) => void
   resetSettings: () => void
-
-  // Modal actions
   openModal: () => void
   closeModal: () => void
   setActiveTab: (tab: number) => void
@@ -126,78 +121,152 @@ export const useSettingsStore = create<SettingsStore>()(
       },
 
       updateSettings: settings => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateSettings',
+        })
+
         set({ settings })
       },
 
-      updateCompany: company =>
+      updateCompany: company => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateCompany',
+        })
+
         set(state => ({
           settings: {
             ...state.settings,
             company: { ...state.settings.company, ...company },
           },
-        })),
+        }))
+      },
 
-      updateBanking: banking =>
+      updateBanking: banking => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateBanking',
+        })
+
         set(state => ({
           settings: {
             ...state.settings,
             banking: { ...state.settings.banking, ...banking },
           },
-        })),
+        }))
+      },
 
-      updateInsurance: insurance =>
+      updateInsurance: insurance => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateInsurance',
+        })
+
         set(state => ({
           settings: {
             ...state.settings,
             insurance: { ...state.settings.insurance, ...insurance },
           },
-        })),
+        }))
+      },
 
-      updateTerms: terms =>
+      updateTerms: terms => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateTerms',
+        })
+
         set(state => ({
           settings: {
             ...state.settings,
             terms: { ...state.settings.terms, ...terms },
           },
-        })),
+        }))
+      },
 
-      updateApi: api =>
+      updateApi: api => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateApi',
+        })
+
         set(state => ({
           settings: {
             ...state.settings,
             api: { ...state.settings.api, ...api },
           },
-        })),
+        }))
+      },
 
-      updateProducts: products =>
+      updateProducts: products => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateProducts',
+        })
+
         set(state => ({
           settings: {
             ...state.settings,
             products: { ...state.settings.products, ...products },
           },
-        })),
+        }))
+      },
 
-      updateDiscounts: discounts =>
+      updateDiscounts: discounts => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateDiscounts',
+        })
+
         set(state => ({
           settings: {
             ...state.settings,
             discounts: { ...state.settings.discounts, ...discounts },
           },
-        })),
+        }))
+      },
 
-      updateTemplate: template =>
+      updateTemplate: template => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'UpdateTemplate',
+        })
+
         set(state => ({
           settings: {
             ...state.settings,
             template: { ...state.settings.template, ...template },
           },
-        })),
+        }))
+      },
 
-      resetSettings: () => set({ settings: DEFAULT_SETTINGS }),
+      resetSettings: () => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'ResetSettings',
+        })
 
-      openModal: () => set({ isModalOpen: true }),
+        set({ settings: DEFAULT_SETTINGS })
+      },
 
-      closeModal: () => set({ isModalOpen: false, activeTab: 0 }),
+      openModal: () => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'OpenModal',
+        })
+
+        set({ isModalOpen: true })
+      },
+
+      closeModal: () => {
+        ReactGA.event({
+          category: 'Settings',
+          action: 'CloseModal',
+        })
+
+        set({ isModalOpen: false, activeTab: 0 })
+      },
 
       setActiveTab: tab => set({ activeTab: tab }),
     }),

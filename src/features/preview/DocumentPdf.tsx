@@ -12,9 +12,6 @@ export const DocumentPdf = ({ data }: DocumentPdfProps) => {
 
   // Router: charge le bon template en fonction de activeTemplate
   switch (activeTemplate) {
-    case 'default':
-      return <DefaultDocumentPdf data={data} />
-    // Ajoutez d'autres templates ici au fur et à mesure
     default:
       return <DefaultDocumentPdf data={data} />
   }

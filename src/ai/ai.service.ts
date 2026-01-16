@@ -2,7 +2,7 @@ import type { AIMessage, AIResponse, AIServiceConfig } from './ai.types'
 import type { Product, PredefinedDiscount, ApiInfo } from '../features/settings/settings.types'
 import type { AIProvider } from './providers/provider.type.ts'
 import { RegistryProvider } from './providers/registry.provider.ts'
-import { SYSTEM_PROMPT } from '../prompts/system.prompt'
+import { SYSTEM_PROMPT } from './ai.prompt.ts'
 import { useSettingsStore } from '../features/settings/settings.store'
 
 /**
@@ -13,6 +13,7 @@ class AIService {
   private readonly registry: RegistryProvider
   private currentProvider: AIProvider | null = null
   private currentProviderId: string = 'openai' // Provider par défaut
+  private readonly currentResponse: AIMessage[] = []
 
   constructor() {
     this.registry = new RegistryProvider()
@@ -115,9 +116,12 @@ class AIService {
       }
     }
 
+
+    this.currentResponse.push(conversationHistory[conversationHistory.length-1])
+
     try {
-      return await this.currentProvider.generateDocument(
-        conversationHistory,
+      const response = await this.currentProvider.generateDocument(
+        this.currentResponse,
         SYSTEM_PROMPT.replace(
           '{{businessExplanation}}',
           settings.company.businessExplanation || 'aucune information sur le métier',
@@ -126,6 +130,14 @@ class AIService {
           .replace('{{discounts}}', this.formatDiscounts(settings.discounts.items)),
         config,
       )
+
+      if (response.rawResponse) {
+        this.currentResponse.push({ role: 'assistant', content: response.rawResponse })
+      }
+
+      console.log('response', response)
+
+      return response
     } catch (error) {
       return {
         success: false,

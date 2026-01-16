@@ -1,5 +1,5 @@
 import { type Message } from '../../types'
-import { cn } from '../../utils/cn'
+import { cn } from '../../utils/cn.util.ts'
 
 interface ChatMessageProps {
   message: Message

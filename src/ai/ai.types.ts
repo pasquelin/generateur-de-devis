@@ -1,6 +1,7 @@
 /**
  * Types pour le service IA
  */
+import type { MessageRole } from '../types'
 
 export type AIDiscountType = 'percentage' | 'fixed'
 
@@ -33,7 +34,7 @@ export interface AIDocumentData {
 }
 
 export interface AIMessage {
-  role: 'system' | 'user' | 'assistant'
+  role: MessageRole
   content: string
 }
 
