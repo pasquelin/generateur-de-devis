@@ -304,7 +304,7 @@ export const DocumentManager = () => {
               <span>Aucun document trouvé</span>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="scrollbar-hide overflow-x-auto">
               <table className="table-zebra table">
                 <thead>
                   <tr>
@@ -423,7 +423,7 @@ export const DocumentManager = () => {
               <span>Aucun devis enregistré pour le moment</span>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="scrollbar-hide overflow-x-auto">
               <table className="table-zebra table">
                 <thead>
                   <tr>

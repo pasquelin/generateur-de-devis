@@ -29,7 +29,7 @@ export const TermsTab = () => {
             <input type="checkbox" {...register('terms.vatNotApplicable')} className="checkbox" />
             <div>
               <span className="label-text font-medium">TVA non applicable (Micro-entreprise)</span>
-              <p className="text-base-content/60 mt-1 text-xs">
+              <p className="text-base-content/60 mt-1 text-xs w-56">
                 Article 293 B du CGI - Si vous êtes auto-entrepreneur ou micro-entrepreneur,
                 <br />
                 cochez cette case pour ne pas appliquer de TVA sur vos devis.
@@ -112,7 +112,7 @@ export const TermsTab = () => {
         </h3>
 
         {/* Validité du devis */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="form-control w-full">
             <label className="label pt-0">
               <span className="label-text font-medium">

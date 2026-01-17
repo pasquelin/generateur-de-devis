@@ -13,8 +13,10 @@ import { ApiModal } from './features/settings/components/ApiModal.tsx'
 import { useTemplateEditorStore } from './stores/templateEditor.store.ts'
 import { useEscapeKey } from './hooks/useEscapeKey.ts'
 import { cn } from './utils/cn.util.ts'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ReactGA from 'react-ga4'
+import { useAuth } from './hooks/useAuth.ts'
+import { authService } from './services/auth.service.ts'
 
 export const App = () => {
   const { openModal } = useSettingsStore()
@@ -22,6 +24,9 @@ export const App = () => {
   const { exportPdf } = usePdfExport(data)
   const { isOpen, toggleDrawer, closeDrawer } = useTemplateEditorStore()
   const [showPreview, setShowPreview] = useState(false)
+
+  // 🔐 Initialisation de l'authentification transparente
+  useAuth()
 
   useTemplateEditorAutoClose()
 
@@ -49,9 +54,20 @@ export const App = () => {
     })
   }
 
+  useEffect(() => {
+    window.createLemonSqueezy()
+    window.LemonSqueezy.Setup({
+      eventHandler: event => {
+        if (event === 'Checkout.Success') {
+          void authService.refreshPaymentData()
+        }
+      },
+    })
+  }, [])
+
   return (
     <>
-      <div className="flex h-screen min-h-200 min-w-95 overflow-hidden">
+      <div className="flex h-svh min-w-95 overflow-hidden">
         <div className={cn('bg-base-300 from-primary/10 flex flex-1 flex-col bg-linear-to-br')}>
           <header className="bg-base-100 shadow-lg">
             <div className="m-auto flex max-w-470 flex-col gap-3 p-3 sm:gap-4 sm:p-4 md:flex-row md:py-2">

@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import type { DocumentData } from '../../../../types'
 import { useDocumentPdf } from '../../../../hooks/useDocumentPdf.tsx'
 import { useSettingsStore } from '../../../settings/settings.store'
+import { hasAccess, PRODUCT_IDS } from '../../../../utils/access.util.ts'
 
 interface DocumentPdfProps {
   data: DocumentData
@@ -284,6 +285,19 @@ export const DocumentPdf = ({ data }: DocumentPdfProps) => {
           lineHeight: 1.3,
           marginBottom: 2,
         },
+
+        footerGenerated: {
+          position: 'absolute',
+          bottom: 20,
+          left: 40,
+          right: 40,
+          textAlign: 'center',
+          paddingTop: 10,
+        },
+        footerGeneratedText: {
+          fontSize: 8,
+          color: colors.textTertiary,
+        },
       }),
     [styles, colors],
   )
@@ -556,6 +570,14 @@ export const DocumentPdf = ({ data }: DocumentPdfProps) => {
             </Text>
             <Text style={dynamicStyles.legalText}>
               • Acceptation du devis : signature précédée de la mention "Bon pour accord"
+            </Text>
+          </View>
+        )}
+
+        {!hasAccess(PRODUCT_IDS.NO_SIGNE.product_id) && (
+          <View style={dynamicStyles.footerGenerated}>
+            <Text style={dynamicStyles.footerGeneratedText}>
+              Généré sur https://generateur-de-devis.fr
             </Text>
           </View>
         )}

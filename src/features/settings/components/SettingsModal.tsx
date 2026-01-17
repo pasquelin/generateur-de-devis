@@ -27,6 +27,7 @@ import { TermsTab } from './TermsTab'
 import { BusinessExplanationTab } from './BusinessExplanationTab'
 import { useApiFormValidation } from '../hooks/useApiFormValidation.ts'
 import { cleanApiData } from '../utils/cleanApiData.ts'
+import { cn } from '../../../utils/cn.util.ts'
 
 interface TabConfig {
   id: number
@@ -133,34 +134,39 @@ export const SettingsModal = () => {
         </div>
 
         {/* Tabs */}
-        <div className="border-base-300 bg-base-200 border-b px-6">
-          <div role="tablist" className="tabs tabs-bordered">
-            {TABS.map(tab => {
-              const Icon = tab.icon
-              const hasError = hasTabErrors(tab.id)
-              return (
-                <button
-                  key={tab.id}
-                  role="tab"
-                  type="button"
-                  className={`tab gap-2 ${activeTab === tab.id ? 'tab-active' : ''}`}
-                  onClick={() => setActiveTab(tab.id)}
-                >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
-                  {hasError && (
-                    <div className="badge badge-error badge-xs" title="Erreurs de validation" />
-                  )}
-                </button>
-              )
-            })}
+        <div>
+          <div className="border-base-300 bg-base-200 scrollbar-hide h-10 overflow-x-auto overflow-y-hidden border-b px-6">
+            <div role="tablist" className="tabs tabs-bordered flex-nowrap">
+              {TABS.map(tab => {
+                const Icon = tab.icon
+                const hasError = hasTabErrors(tab.id)
+                return (
+                  <button
+                    key={tab.id}
+                    role="tab"
+                    type="button"
+                    className={cn('tab flex-nowrap gap-2', activeTab === tab.id && 'tab-active')}
+                    onClick={() => setActiveTab(tab.id)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                    {hasError && (
+                      <div className="badge badge-error badge-xs" title="Erreurs de validation" />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 
         {/* Content */}
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-1 grow flex-col overflow-hidden"
+          >
+            <div className="scrollbar-hide scrollbar-hide grow overflow-y-auto p-6">
               <ActiveTabComponent />
             </div>
 

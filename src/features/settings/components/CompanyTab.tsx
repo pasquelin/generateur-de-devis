@@ -37,7 +37,7 @@ export const CompanyTab = () => {
       {/* Section Identité */}
       <div className="space-y-4">
         {/* Nom de l'entreprise */}
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <div className="form-control w-full grow space-y-1">
             <label className="label pt-0">
               <span className="label-text font-medium">
@@ -58,7 +58,7 @@ export const CompanyTab = () => {
           </div>
 
           {/* Forme juridique */}
-          <div className="form-control w-72 space-y-1">
+          <div className="form-control space-y-1 sm:w-72">
             <label className="label pt-0">
               <span className="label-text font-medium">Forme juridique</span>
             </label>

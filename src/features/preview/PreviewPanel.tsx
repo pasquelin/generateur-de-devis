@@ -6,6 +6,8 @@ import { Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useChatStore } from '../chat/chat.store.ts'
 import { DocumentManager } from './DocumentManager.tsx'
+import { BuyButton } from '../../components/BuyButton.tsx'
+import { hasAccess, PRODUCT_IDS } from '../../utils/access.util.ts'
 
 export const PreviewPanel = () => {
   const { data, hasChange, reset } = useDocumentStore()
@@ -83,6 +85,19 @@ export const PreviewPanel = () => {
 
               {settings.template.activeTemplate === 'default' && (
                 <DefaultDocumentPreview data={data} contentRef={contentRef} />
+              )}
+
+              {!hasAccess(PRODUCT_IDS.NO_SIGNE.product_id) && (
+                <div className="absolute right-0 bottom-4 left-0 flex justify-center">
+                  <div className="text-primary flex flex-col justify-center gap-1">
+                    <div className="text-center">
+                      <BuyButton link={PRODUCT_IDS.NO_SIGNE.link} className="btn-xs btn-warning">
+                        Supprimer la signature
+                      </BuyButton>
+                    </div>
+                    Généré sur https://generateur-de-devis.fr
+                  </div>
+                </div>
               )}
             </div>
           </div>

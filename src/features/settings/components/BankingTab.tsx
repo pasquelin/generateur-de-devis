@@ -39,7 +39,7 @@ export const BankingTab = () => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* IBAN */}
           <div className="form-control w-full space-y-1">
             <label className="label pt-0">

@@ -147,7 +147,7 @@ export default defineConfig({
       key: fs.readFileSync('./certs/localhost-key.pem'),
       cert: fs.readFileSync('./certs/localhost.pem'),
     },
-    host: 'localhost',
+    host: '192.168.1.113',
     port: 3000,
     cors: true,
     headers: {

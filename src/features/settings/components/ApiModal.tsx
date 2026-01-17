@@ -73,7 +73,7 @@ export const ApiModal = () => {
         {/* Content */}
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="scrollbar-hide flex-1 overflow-y-auto p-6">
               <ApiTab />
             </div>
 

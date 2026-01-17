@@ -98,7 +98,7 @@ export const ChatPanel = () => {
     <Panel className="h-full overflow-hidden">
       <div className="flex h-full flex-col gap-4">
         {/* Historique des messages */}
-        <div className="relative grow overflow-y-auto">
+        <div className="scrollbar-hide relative grow overflow-y-auto">
           <div className="absolute mb-4 h-full w-full space-y-4">
             {messages.length === 0 ? (
               <ChatPanelEmpty />

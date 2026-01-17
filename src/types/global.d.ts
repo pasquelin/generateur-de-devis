@@ -46,4 +46,12 @@ declare const SpeechRecognition: {
 interface Window {
   SpeechRecognition: typeof SpeechRecognition
   webkitSpeechRecognition: typeof SpeechRecognition
+  LemonSqueezy: {
+    Setup: (config: { eventHandler?: (event: any) => void }) => void
+    Url: {
+      Open: (url: string) => void
+      Close: () => void
+    }
+  }
+  createLemonSqueezy: () => void
 }
